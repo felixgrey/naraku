@@ -2,10 +2,12 @@ import { EventEmitter } from 'events';
 import { DataHub } from '../naraku-core';
 export  *  from '../naraku-core';
 
+let changeIndex = 0;
+
 DataHub.inject = config => {
   return Component => {   
-    const {afterCreated, beforeDestroy} = DataHub.pageView(config, function(model) {
-      this.setState({model});
+    const {afterCreated, beforeDestroy} = DataHub.pageView(config, function(dataHub) {
+      this.setState({changeIndex: changeIndex++});
     });
     
     // componentWillMount

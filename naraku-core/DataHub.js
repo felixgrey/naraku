@@ -248,19 +248,14 @@ export class Controller {
       }
       clearTimeout(this._watchTimeoutIndex);
       this._watchTimeoutIndex = setTimeout(() => {
-        callback(this.getModel());
+        callback();
       }, lagTime);  
     };
 
     this[fun]('$dataChange', onChange);
     this[fun]('$statusChange', onChange);
     
-    callback(this.getModel());
-  }
-  
-  @ifInvalid()
-  getModel() {
-    return Object.freeze({...this._dataHub._data});
+    callback();
   }
 
   @ifInvalid(blank)
