@@ -29,8 +29,6 @@ function run(command) {
   });
 }
 
-var publishError = false;
-
 var runBeforePublish;
 if(argv[2] === 'ok') {
   runBeforePublish = run('npx babel src --out-dir '+ path.resolve(__dirname, "lib"))
@@ -51,13 +49,9 @@ runBeforePublish
 .then(function() {
   return run('npm publish --registry=https://registry.npmjs.org');
 })
-.catch(function(err) {
-  publishError = true;
-})
 .then(function() {
-  if(publishError){
-    console.log(colorFont('npm publish error!', COLOR.RED));
-  } else {
-    console.log(colorFont('npm publish done!', COLOR.GREEN));
-  }
+  console.log(colorFont('npm publish done!', COLOR.GREEN));
+})
+.catch(function(err) {
+  console.log(colorFont('npm publish error!', COLOR.RED));
 });
