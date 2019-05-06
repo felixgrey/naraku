@@ -1,12 +1,12 @@
 {
   "name": "naraku",
-  "version": "0.0.8",
+  "version": "0.0.11",
   "description": "DataHub,Transformer and Tools",
   "repository": "https://github.com/felixgrey/naraku.git",
   "main": "lib/naraku-core.js",
   "scripts": {
     "build": "babel src --out-dir lib",
-    "publish": "node publish.js",
+    "up": "node publish.js",
     "ok": "node publish.js ok"
   },
   "keywords": [

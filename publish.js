@@ -1,6 +1,8 @@
 var exec = require('child_process').exec;
+var os = require('os');
 var path = require('path');
 var argv = process.argv;
+var platform = os.platform();
 
 var COLOR = {
   RED: '31',
@@ -48,6 +50,9 @@ runBeforePublish
   return run('npm config set registry https://registry.npmjs.org');
 })
 .then(function() {
+//if(platform === 'win32'){
+//  return run('powershell.exe -Command "npm publish"');
+//}
   return run('npm publish');
 })
 .catch(function(err) {
