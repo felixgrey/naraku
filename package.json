@@ -1,7 +1,7 @@
 {
   "name": "naraku",
-  "version": "0.0.7",
-  "description": "Store And Transformer for data",
+  "version": "0.0.8",
+  "description": "DataHub,Transformer and Tools",
   "repository": "https://github.com/felixgrey/naraku.git",
   "main": "lib/naraku-core.js",
   "scripts": {
@@ -10,7 +10,9 @@
     "ok": "node publish.js ok"
   },
   "keywords": [
-   "store"
+   "Store",
+   "DataHub",
+   "Transformer"
   ],
   "author": "felixgrey",
   "license": "MIT",
