@@ -1,11 +1,13 @@
 {
   "name": "naraku",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Store And Transformer for data",
   "repository": "https://github.com/felixgrey/naraku.git",
   "main": "lib/naraku-core.js",
   "scripts": {
-    "build": "babel src --out-dir lib"
+    "build": "babel src --out-dir lib",
+    "publish": "node publish.js",
+    "ok": "node publish.js ok"
   },
   "keywords": [
    "store"
