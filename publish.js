@@ -18,15 +18,13 @@ function run(command) {
   return new Promise(function(resolve, reject) {
     console.log(colorFont('run: ', COLOR.WATER), command);
     exec(command, function(err, stdout, stderr){
-      setTimeout(() => {
-        if(err) {
-          console.log(stderr);
-          reject(stderr);
-        } else {
-          console.log(stdout);
-          resolve(stdout);
-        }
-      }, 1000);
+      if(err) {
+        console.log(stderr);
+        reject(stderr);
+      } else {
+        console.log(stdout);
+        resolve(stdout);
+      }
     });
   });
 }
@@ -51,16 +49,10 @@ if(argv[2] === 'ok') {
 
 runBeforePublish
 .then(function() {
-  return run('npm config set registry https://registry.npmjs.org');
-})
-.then(function() {
-  return run('npm publish');
+  return run('npm publish --registry=https://registry.npmjs.org');
 })
 .catch(function(err) {
   publishError = true;
-})
-.then(function() {
-  // return run('npm config set registry https://registry.npm.taobao.org');
 })
 .then(function() {
   if(publishError){
