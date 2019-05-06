@@ -1,11 +1,22 @@
 {
   "name": "naraku",
-  "version": "0.0.4",
-  "description": "Store And Tools",
-  "main": "index.js",
+  "version": "0.0.5",
+  "description": "Store And Transformer for data",
+  "repository": "https://github.com/felixgrey/naraku.git",
+  "main": "lib/naraku-core.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "babel src --out-dir lib"
   },
-  "author": "",
-  "license": ""
+  "keywords": [
+   "store"
+  ],
+  "author": "felixgrey",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.4",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/plugin-proposal-decorators": "^7.1.0",
+    "@babel/preset-env": "^7.4.4"
+  }
 }
