@@ -648,8 +648,7 @@ DataHub.instance = (config) => {
 
 DataHub.setEmitter = (Emitter) => {
   if(_Emitter) {
-    errorLog('Emitter has implemented');
-    return;
+    errorLog('Emitter has implemented, who care');
   }
   
   const _pe = Emitter.prototype;
