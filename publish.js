@@ -18,13 +18,15 @@ function run(command) {
   return new Promise(function(resolve, reject) {
     console.log(colorFont('run: ', COLOR.WATER), command);
     exec(command, function(err, stdout, stderr){
-      if(err) {
-        console.log(stderr);
-        reject(stderr);
-      } else {
-        console.log(stdout);
-        resolve(stdout);
-      }
+      setTimeout(() => {
+        if(err) {
+          console.log(stderr);
+          reject(stderr);
+        } else {
+          console.log(stdout);
+          resolve(stdout);
+        }
+      }, 1000);
     });
   });
 }
