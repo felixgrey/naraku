@@ -50,8 +50,8 @@ runBeforePublish
   return run('npm publish --registry=https://registry.npmjs.org');
 })
 .then(function() {
-  console.log(colorFont('npm publish done!', COLOR.GREEN));
+  console.log(colorFont('publish done!', COLOR.GREEN));
 })
 .catch(function(err) {
-  console.log(colorFont('npm publish error!', COLOR.RED));
+  console.log(colorFont('publish error!', COLOR.RED));
 });

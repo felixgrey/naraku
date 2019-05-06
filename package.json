@@ -1,6 +1,6 @@
 {
   "name": "naraku",
-  "version": "0.0.12",
+  "version": "0.0.15",
   "description": "DataHub,Transformer and Tools",
   "repository": "https://github.com/felixgrey/naraku.git",
   "main": "lib/naraku-core.js",
