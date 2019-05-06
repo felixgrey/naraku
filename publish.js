@@ -39,7 +39,7 @@ if(argv[2] === 'ok') {
   }).then((stdout) => {
     var message = argv[3];
     message = message === undefined ? new Date().toString().replace(/\s+/g,'-') : message;
-    return run("git commit -m 'naraku'");
+    return run("git commit -m '" + message + "'");
   }).then((stdout) => {
     return run("git push");
   });
