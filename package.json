@@ -1,18 +1,21 @@
 {
   "name": "naraku",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "DataHub,Transformer and Tools",
   "repository": "https://github.com/felixgrey/naraku.git",
   "main": "lib/naraku-core.js",
   "scripts": {
     "build": "babel src --out-dir lib",
-    "up": "node publish.js",
-    "ok": "node publish.js ok"
+    "ok": "node publish.js ok",
+    "postinstall": "node initTools.js"
   },
   "keywords": [
    "Store",
    "DataHub",
-   "Transformer"
+   "Transformer",
+   "Flux",
+   "Redux",
+   "Dva"
   ],
   "author": "felixgrey",
   "license": "MIT",

@@ -1,8 +1,8 @@
 var exec = require('child_process').exec;
-var os = require('os');
 var path = require('path');
 var argv = process.argv;
-var platform = os.platform();
+//var os = require('os');
+//var platform = os.platform(); // darwin linux win32
 
 var COLOR = {
   RED: '31',
@@ -16,7 +16,7 @@ function colorFont(text, color){
 
 function run(command) {
   return new Promise(function(resolve, reject) {
-    console.log(colorFont('run: ',COLOR.WATER), command);
+    console.log(colorFont('run: ', COLOR.WATER), command);
     exec(command, function(err, stdout, stderr){
       if(err) {
         console.log(stderr);
@@ -37,6 +37,8 @@ if(argv[2] === 'ok') {
   .then((stdout) => {
     return run('git add .');
   }).then((stdout) => {
+    var message = argv[2];
+    message = message === undefined ? new Date().toString().replace(/\s+/g,'-') : message;
     return run("git commit -m 'naraku'");
   }).then((stdout) => {
     return run("git push");
@@ -50,9 +52,6 @@ runBeforePublish
   return run('npm config set registry https://registry.npmjs.org');
 })
 .then(function() {
-//if(platform === 'win32'){
-//  return run('powershell.exe -Command "npm publish"');
-//}
   return run('npm publish');
 })
 .catch(function(err) {
@@ -63,8 +62,8 @@ runBeforePublish
 })
 .then(function() {
   if(publishError){
-      console.log(colorFont('npm publish error!', COLOR.RED));
+    console.log(colorFont('npm publish error!', COLOR.RED));
   } else {
-      console.log(colorFont('npm publish done!', COLOR.GREEN));
+    console.log(colorFont('npm publish done!', COLOR.GREEN));
   }
 });
