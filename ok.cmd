@@ -1,1 +1,1 @@
-powershell.exe -NoExit  -Command "cd %~dp0 | npm run ok"
+powershell.exe -Command "cd %~dp0 | npm run ok"
