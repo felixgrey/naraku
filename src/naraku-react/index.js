@@ -4,9 +4,9 @@ export  *  from '../naraku-core';
 
 let changeIndex = 0;
 
-DataHub.inject = config => {
+DataHub.inject = (config, gDh) => {
   return Component => {   
-    const {afterCreated, beforeDestroy} = DataHub.pageView(config, function(dataHub) {
+    const {afterCreated, beforeDestroy} = DataHub.pageView(config, function(dataHub, gDh) {
       this.setState({changeIndex: changeIndex++});
     });
     

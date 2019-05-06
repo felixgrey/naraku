@@ -682,27 +682,31 @@ DataHub.setEmitter = (Emitter) => {
 DataHub.inject = blank;
 DataHub.component = blank;
 
-DataHub.pageView = (config = {}, updateView = () => blank) => {
+DataHub.pageView = (config = null, updateView = () => blank, gDh = true) => {
   return {
     afterCreated: (that, afterCreated) => {
-      that._dh = DataHub.instance(config);
-      that.dhController = that._dh.controller();
-      that.dhController.watch(() => updateView.call(that)); 
-
-      that.globalDhController = DataHub.dh.controller();
-      that.globalDhController.watch(() => updateView.call(that));
+      if (!noValue(config)) {
+        that._dh = DataHub.instance(config);
+        that.dhController = that._dh.controller();
+        that.dhController.watch(() => updateView.call(that)); 
+      }
       
+      if (gDh) {
+        that.globalDhController = DataHub.dh.controller();
+        that.globalDhController.watch(() => updateView.call(that));
+      }
+
       afterCreated && afterCreated.apply(that);
     },
     beforeDestroy: (that, beforeDestroy) => {
       beforeDestroy && beforeDestroy.apply(that);
       
-      that.globalDhController.destroy();
-      that.globalDhController = null;
+      that.globalDhController && that.globalDhController.destroy();
+      that._dh && that._dh.destroy();
       
-      that._dh.destroy();
       that._dh = null;
       that.dhController = null; 
+      that.globalDhController = null;
     }
   }
 };
