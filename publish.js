@@ -60,7 +60,7 @@ runBeforePublish
   publishError = true;
 })
 .then(function() {
-  return run('npm config set registry https://registry.npm.taobao.org');
+  // return run('npm config set registry https://registry.npm.taobao.org');
 })
 .then(function() {
   if(publishError){
