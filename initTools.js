@@ -1,5 +1,4 @@
 /*
- nst -url 'localhost:8080'
- nst [page]
+ ndt --stp
  */
-console.log("TODO: initSwaggerTools");
+console.log("TODO: initTools");
