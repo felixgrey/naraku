@@ -648,7 +648,7 @@ DataHub.instance = (config) => {
 
 DataHub.setEmitter = (Emitter) => {
   if(_Emitter) {
-    errorLog('Emitter has implemented, who care');
+    errorLog('Emitter has implemented, who care!');
   }
   
   const _pe = Emitter.prototype;
@@ -685,7 +685,8 @@ DataHub.component = blank;
 DataHub.pageView = (config = null, updateView = () => blank, gDh = true) => {
   return {
     afterCreated: (that, afterCreated) => {
-      if (!noValue(config)) {
+      const cfg = !noValue(config);
+      if (cfg) {
         that._dh = DataHub.instance(config);
         that.dhController = that._dh.controller();
         that.dhController.watch(() => updateView.call(that)); 
@@ -694,6 +695,10 @@ DataHub.pageView = (config = null, updateView = () => blank, gDh = true) => {
       if (gDh) {
         that.globalDhController = DataHub.dh.controller();
         that.globalDhController.watch(() => updateView.call(that));
+      }
+      
+      if((!cfg) && (!gDh)) {
+        errorLog('not and dataHub, who care!')
       }
 
       afterCreated && afterCreated.apply(that);
