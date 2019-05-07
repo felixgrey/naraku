@@ -33,16 +33,18 @@ function run(command, echo = true) {
 
 var runBeforePublish;
 if(argv[2] === 'ok') {
-runBeforePublish = run('npx babel src --out-dir '+ path.resolve(__dirname, "lib"))
-.then((stdout) => {
-  return run('git add .');
-}).then((stdout) => {
-  var message = argv[3];
-  message = message === undefined ? new Date().toString().replace(/\s+/g,'-') : message;
-  return run("git commit -m '" + message + "'");
-}).then((stdout) => {
-  return run("git push");
-});
+  runBeforePublish = run('npx babel src --out-dir '+ path.resolve(__dirname, "lib"))
+  .then((stdout) => {
+    return run('git add .');
+  })
+  .then((stdout) => {
+    var message = argv[3];
+    message = message === undefined ? new Date().toString().replace(/\s+/g,'-') : message;
+    return run("git commit -m '" + message + "'");
+  })
+  .then((stdout) => {
+    return run("git push");
+  });
 } else {
   runBeforePublish = Promise.resolve();
 }
