@@ -12,7 +12,10 @@ var COLOR = {
   L_PURPE: '1;35' 
 };
 
-function colorFont(text, color){
+function colorFont(text, color) {
+  if(!color) {
+    return text;
+  }
   return '\033[' + color + 'm' + text + '\033[0m';
 }
 

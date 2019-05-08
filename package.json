@@ -1,6 +1,6 @@
 {
   "name": "naraku",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "DataHub and Transformer for OA",
   "repository": "https://github.com/felixgrey/naraku.git",
   "main": "lib/naraku-core.js",
@@ -12,7 +12,8 @@
     "OA",
     "Store",
     "DataHub",
-    "Transformer"
+    "Transformer",
+    "naraku"
   ],
   "author": "felixgrey",
   "license": "MIT",
