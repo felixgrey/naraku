@@ -1,35 +1,9 @@
 var exec = require('child_process').exec;
 var path = require('path');
+var {COLOR, colorFont, run} = require('./tools');
 var argv = process.argv;
 // var os = require('os');
 // var platform = os.platform(); // darwin linux win32
-
-var COLOR = {
-  RED: '31',
-  GREEN: '32',
-  WATER: '36'
-};
-
-function colorFont(text, color){
-  return '\033[;' + color + 'm' + text + '\033[0m';
-}
-
-function run(command, echo = true) {
-  return new Promise(function(resolve, reject) {
-    if (echo) {
-      console.log(colorFont('run: ', COLOR.WATER), command);
-    }
-    exec(command, function(err, stdout, stderr){
-      if(err) {
-        console.log(stderr);
-        reject(stderr);
-      } else {
-        console.log(stdout);
-        resolve(stdout);
-      }
-    });
-  });
-}
 
 var runBeforePublish;
 if(argv[2] === 'ok') {
@@ -57,5 +31,6 @@ runBeforePublish
   console.log(colorFont('publish done!', COLOR.GREEN));
 })
 .catch(function(err) {
+  console.log(err);
   console.log(colorFont('publish error!', COLOR.RED));
 });

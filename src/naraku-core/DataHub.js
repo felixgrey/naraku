@@ -1,4 +1,4 @@
-import {noValue, stopRun, blank, errorLog} from './Utils.js';
+import {noValue, stopRun, blank, errorLog, snapShotData} from './Utils.js';
 
 let _Emitter = null;
 let dataHubKey = 1;
@@ -179,6 +179,16 @@ export class Controller {
   @ifInvalid()
   emit(name, ...args) {
     return this._dataHub.emit(name, ...args);
+  }
+  
+  @ifInvalid()
+  snapshot(from, to) {
+    return this._dataHub.snapshot(from, to);
+  }
+  
+  @ifInvalid()
+  reset(name) {
+    return this._dataHub.reset(name);
   }
   
   @ifInvalid()
@@ -409,7 +419,7 @@ const _dataHubPlugin = {
     } = configInfo;
     
     if(_default !== undefined) {
-      dh.set(dataName, JSON.parse(JSON.stringify(_default)));
+      dh.set(dataName, snapShotData(_default));
     }
   }
 };
@@ -564,14 +574,29 @@ export class DataHub {
   }
   
   @ifInvalid()
+  snapshot(from, to) {
+    this.set(to, snapShotData(this.get(from)));
+  }
+  
+  @ifInvalid()
+  reset(name) {
+    const cfg = this._config[name];
+    if(!cfg || cfg.default === undefined) {
+      this.delete(name);
+    } else {
+      this.set(name, snapShotData(cfg.default));
+    }
+  }
+  
+  @ifInvalid()
   delete(name) {
     delete this._data[name];
+    delete this._status[name];
     this.emit('$dataChange');
     this.emit('$dataChange:' + name);
     this.emit('$statusChange');
     this.emit('$statusChange:' + name);
   }
-  
   
   @ifInvalid()
   refresh(name) {

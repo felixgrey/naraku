@@ -9,10 +9,10 @@
     "ok": "node publish.js ok"
   },
   "keywords": [
-   "OA",
-   "Store",
-   "DataHub",
-   "Transformer"
+    "OA",
+    "Store",
+    "DataHub",
+    "Transformer"
   ],
   "author": "felixgrey",
   "license": "MIT",

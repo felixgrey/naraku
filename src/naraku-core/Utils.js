@@ -23,6 +23,16 @@ if (process && process.env && process.env.NODE_ENV === 'development' && console 
 export {errorLog};
 
 /*
+  数据快照 
+*/
+export function snapShotData(data) {
+  if (noValue(data) || typeof data !== 'object') {
+    return data;
+  }
+  return JSON.parse(JSON.stringify(data));
+}
+
+/*
   18位统一Id
 */
 let idIndex = 1;
