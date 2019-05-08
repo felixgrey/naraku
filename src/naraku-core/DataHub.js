@@ -167,6 +167,16 @@ export class Controller {
   }
   
   @ifInvalid()
+  assign0(name, obj) {
+    return this._dataHub.assign0(name, obj);
+  }
+  
+  @ifInvalid()
+  delete(name) {
+    return this._dataHub.delete(name);
+  }
+  
+  @ifInvalid()
   emit(name, ...args) {
     return this._dataHub.emit(name, ...args);
   }
@@ -544,6 +554,24 @@ export class DataHub {
     }
     return a;
   }
+  
+  @ifInvalid()
+  assign0(name, obj) {    
+    const newObj = Object.assign(this.first(name), obj);
+    const data = this.get(name);
+    data.splice(0, 1, newObj);
+    this.set(name, data);
+  }
+  
+  @ifInvalid()
+  delete(name) {
+    delete this._data[name];
+    this.emit('$dataChange');
+    this.emit('$dataChange:' + name);
+    this.emit('$statusChange');
+    this.emit('$statusChange:' + name);
+  }
+  
   
   @ifInvalid()
   refresh(name) {

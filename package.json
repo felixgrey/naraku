@@ -1,21 +1,18 @@
 {
   "name": "naraku",
-  "version": "0.0.18",
-  "description": "DataHub,Transformer and Tools",
+  "version": "0.0.19",
+  "description": "DataHub and Transformer for OA",
   "repository": "https://github.com/felixgrey/naraku.git",
   "main": "lib/naraku-core.js",
   "scripts": {
     "build": "babel src --out-dir lib",
-    "ok": "node publish.js ok",
-    "postinstall": "node initTools.js"
+    "ok": "node publish.js ok"
   },
   "keywords": [
+   "OA",
    "Store",
    "DataHub",
-   "Transformer",
-   "Flux",
-   "Redux",
-   "Dva"
+   "Transformer"
   ],
   "author": "felixgrey",
   "license": "MIT",

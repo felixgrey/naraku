@@ -1,8 +1,8 @@
 var exec = require('child_process').exec;
 var path = require('path');
 var argv = process.argv;
-var os = require('os');
-var platform = os.platform(); // darwin linux win32
+// var os = require('os');
+// var platform = os.platform(); // darwin linux win32
 
 var COLOR = {
   RED: '31',
@@ -55,11 +55,6 @@ runBeforePublish
 })
 .then(function() {
   console.log(colorFont('publish done!', COLOR.GREEN));
-  if (platform === 'win32') {
-    setTimeout(function() {
-      return run('exit', false);
-    }, 3000);
-  }
 })
 .catch(function(err) {
   console.log(colorFont('publish error!', COLOR.RED));
