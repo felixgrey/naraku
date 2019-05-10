@@ -65,19 +65,18 @@ function vueBind(dataHub, that) {
   
   doBind(that);
   
-  const componentWillUnmount = that.componentWillUnmount;
-  that.componentWillUnmount = function() {
-    beforeDestroy(this, componentWillUnmount);
+  const _beforeDestroy = that.beforeDestroy;
+  that.beforeDestroy = function() {
+    beforeDestroy(this, _beforeDestroy);
   }
 }
 
 DataHub.inject = (config, gDh) => {
   return Component => { 
-    if (Component.prototype.isReactComponent) {
+    if(typeof Component === 'function' && Component.prototype.isReactComponent) {
       return reactInject(Component, config, gDh);
     }
-    
-    if(Component.prototype.vue) {
+    if(typeof Component === 'object' || (typeof Component === 'function' && Component.prototype.vue)) {
       return vueInject(Component);
     }
   }
@@ -86,9 +85,8 @@ DataHub.inject = (config, gDh) => {
 DataHub.bind = (dataHub, that) => {
   if (that.isReactComponent) {
     return reactBind(dataHub, that);
-  }
-  
-  if(that.$data) {
+  }  
+  if(that._isVue) {
     return vueBind(dataHub, that);
   }
 }
