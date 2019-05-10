@@ -39,7 +39,7 @@ function vueInject(Component, config, gDh) {
     Component = new Component().vue || {};
   }
   
-  const {afterCreated, beforeDestroy} = DataHub.pageView(config, function() {
+  const {afterCreated, beforeDestroy} = DataHub.injectView(config, function() {
     this.$forceUpdate();
   }, gDh);
   
