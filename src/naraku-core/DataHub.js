@@ -750,7 +750,7 @@ DataHub.dhName = 'dh';
 DataHub.pDhName = 'pDh';
 DataHub.dhCName = 'dhController';
 DataHub.pDhCName = 'pDhController';
-DataHub.gDhCName = 'pDhController';
+DataHub.gDhCName = 'gDhController';
 
 DataHub.bindView = (dataHub, updateView = () => blank) => {
   return {

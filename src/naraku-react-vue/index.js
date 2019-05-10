@@ -77,7 +77,7 @@ DataHub.inject = (config, gDh) => {
       return reactInject(Component, config, gDh);
     }
     if(typeof Component === 'object' || (typeof Component === 'function' && Component.prototype.vue)) {
-      return vueInject(Component);
+      return vueInject(Component, config, gDh);
     }
   }
 }
