@@ -1,9 +1,9 @@
 {
   "name": "naraku",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "DataHub and Transformer for OA",
   "repository": "https://github.com/felixgrey/naraku.git",
-  "main": "lib/naraku-core.js",
+  "main": "lib/index.js",
   "scripts": {
     "build": "babel src --out-dir lib",
     "ok": "node publish.js ok"

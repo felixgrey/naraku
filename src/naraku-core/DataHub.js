@@ -381,6 +381,9 @@ function dependenceAndFilterPlugn(dataName, configInfo, dh) {
     for (let depName of dependence) {
       const depData = dh.get(depName);
       if(depData.length === 0) {
+        if(this.get(dataName).length !== 0) {
+          this.set(dataName, []);
+        }
         return;
       }
       Object.assign(param, toObjParam(depData[0]));
@@ -400,12 +403,15 @@ function dependenceAndFilterPlugn(dataName, configInfo, dh) {
   dh._executor.register('$refresh:' + dataName, $fetch);
   
   if(!lazy){
-    if(dependence.length === 0 && filter.length === 0) {
-      $fetch();
-      return;
+    if (dependence.length) {
+      dh._controller.when(dependence, $fetch);  
     }
-    dh._controller.when(dependence, $fetch);  
-    filter.forEach(fName => dh._controller.when(fName, $fetch));
+    
+    if (filter.length) {
+      filter.forEach(fName => dh._controller.when(fName, $fetch));
+    }
+    
+    $fetch();
   }
 }
 
@@ -549,6 +555,11 @@ export class DataHub {
   @ifInvalid()
   emit(name, ...args){
     this._emitter.emit(name, ...args);
+  }
+  
+  @ifInvalid()
+  bind(that) {
+    return DataHub.bind(this, that);
   }
   
   @ifInvalid()
@@ -733,25 +744,47 @@ DataHub.setEmitter = (Emitter) => {
 }
 
 DataHub.inject = blank;
-DataHub.component = blank;
+DataHub.bind = blank;
 
-DataHub.pageView = (config = null, updateView = () => blank, gDh = true) => {
+DataHub.dhName = 'dh';
+DataHub.pDhName = 'pDh';
+DataHub.dhCName = 'dhController';
+DataHub.pDhCName = 'pDhController';
+DataHub.gDhCName = 'pDhController';
+
+DataHub.bindView = (dataHub, updateView = () => blank) => {
+  return {
+    doBind: (that) => {
+      that[DataHub.pDhName] = dataHub;
+      that[DataHub.pDhCName] = that[DataHub.pDhName].controller();
+      that[DataHub.pDhCName].watch(() => updateView.call(that)); 
+    },
+    beforeDestroy: (that, beforeDestroy) => {
+      beforeDestroy && beforeDestroy.apply(that);
+      
+      that[DataHub.pDhCName] && that[DataHub.pDhCName].destroy();      
+      that[DataHub.pDhCName] = null;
+    }
+  }
+};
+
+DataHub.injectView = (config = null, updateView = () => blank, gDh = true) => {
   return {
     afterCreated: (that, afterCreated) => {
       const cfg = !noValue(config);
       if (cfg) {
-        that._dh = DataHub.instance(config);
-        that.dhController = that._dh.controller();
-        that.dhController.watch(() => updateView.call(that)); 
+        that[DataHub.dhName] = DataHub.instance(config);
+        that[DataHub.dhCName] = that[DataHub.dhName].controller();
+        that[DataHub.dhCName].watch(() => updateView.call(that)); 
       }
       
       if (gDh) {
-        that.globalDhController = DataHub.dh.controller();
-        that.globalDhController.watch(() => updateView.call(that));
+        that[DataHub.gDhCName] = DataHub.dh.controller();
+        that[DataHub.gDhCName].watch(() => updateView.call(that));
       }
       
       if((!cfg) && (!gDh)) {
-        errorLog('not and dataHub, who care!')
+        errorLog('not inject dataHub or globalDataHub, who care!')
       }
 
       afterCreated && afterCreated.apply(that);
@@ -759,12 +792,12 @@ DataHub.pageView = (config = null, updateView = () => blank, gDh = true) => {
     beforeDestroy: (that, beforeDestroy) => {
       beforeDestroy && beforeDestroy.apply(that);
       
-      that.globalDhController && that.globalDhController.destroy();
-      that._dh && that._dh.destroy();
+      that[DataHub.gDhCName] && that[DataHub.gDhCName].destroy();
+      that[DataHub.dhName] && that[DataHub.dhName].destroy();
       
-      that._dh = null;
-      that.dhController = null; 
-      that.globalDhController = null;
+      that[DataHub.dhName] = null;
+      that[DataHub.dhCName] = null; 
+      that[DataHub.gDhCName] = null;
     }
   }
 };

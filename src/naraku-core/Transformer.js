@@ -729,8 +729,6 @@ export class TransformProcess {
     config = groupStrToConfig(config);
     this._toXSeries(config, 'NumSeries',
       item => item[config.valueFields[0]]);
-    
-   
   }
   
   @refReturn
