@@ -377,7 +377,7 @@ function dependenceAndFilterPlugn(dataName, configInfo, dh) {
   
   const $fetch = () => {
     const param = dh._fetchParam[dataName] = dh._fetchParam[dataName] || {};
-    
+
     for (let depName of dependence) {
       const depData = dh.get(depName);
       if(depData.length === 0) {
@@ -397,7 +397,7 @@ function dependenceAndFilterPlugn(dataName, configInfo, dh) {
       Object.assign(param, toObjParam(filterData[0]));
     }
     
-    dh.doFetch(type, dataName, param);
+    dh.doFetch(type, dataName, param, {form});
   }
   
   dh._executor.register('$refresh:' + dataName, $fetch);
@@ -632,7 +632,7 @@ export class DataHub {
   }
   
   @ifInvalid()
-  doFetch(type, name, param) {
+  doFetch(type, name, param, extend = {}) {
     
     clearTimeout(this._lagFetchTimeoutIndex[name]);
     this._lagFetchTimeoutIndex[name] = setTimeout(() => {
@@ -650,7 +650,7 @@ export class DataHub {
         if(newParam === stopRun) {
           return Promise.reject(stopRun);
         }
-        return DataHub.dh._controller.run(type, {param, data: this.get(name)});
+        return DataHub.dh._controller.run(type, {...extend, param, data: this.get(name)});
       })
       .then((result) => {
         return DataHub.dh._controller.run('afterFetcher', [result, this]);
