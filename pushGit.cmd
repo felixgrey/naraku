@@ -1,0 +1,1 @@
+powershell.exe -NoExit  -Command "cd %~dp0 | npm run push-git"

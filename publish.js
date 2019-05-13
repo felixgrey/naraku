@@ -6,7 +6,7 @@ var argv = process.argv;
 // var platform = os.platform(); // darwin linux win32
 
 var runBeforePublish;
-if(argv[2] === 'ok') {
+if(argv[2] === 'ok' || argv[2] === 'git') {
   runBeforePublish = run('npx babel src --out-dir '+ path.resolve(__dirname, "lib"))
   .then((stdout) => {
     return run('git add .');
@@ -22,15 +22,16 @@ if(argv[2] === 'ok') {
 } else {
   runBeforePublish = Promise.resolve();
 }
-
-runBeforePublish
-.then(function() {
-  return run('npm publish --registry=https://registry.npmjs.org');
-})
-.then(function() {
-  console.log(colorFont('publish done!', COLOR.GREEN));
-})
-.catch(function(err) {
-  console.log(err);
-  console.log(colorFont('publish error!', COLOR.RED));
-});
+if(argv[2] !== 'git') {
+  runBeforePublish
+  .then(function() {
+    return run('npm publish --registry=https://registry.npmjs.org');
+  })
+  .then(function() {
+    console.log(colorFont('publish done!', COLOR.GREEN));
+  })
+  .catch(function(err) {
+    console.log(err);
+    console.log(colorFont('publish error!', COLOR.RED));
+  });
+}

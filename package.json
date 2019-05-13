@@ -6,6 +6,7 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "babel src --out-dir lib",
+    "push-git" : "node publish.js git",
     "ok": "node publish.js ok"
   },
   "keywords": [
