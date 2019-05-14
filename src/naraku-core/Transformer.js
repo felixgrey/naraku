@@ -1,4 +1,4 @@
-import {noValue, same} from './Utils.js';
+import {noValue, same, snapShot} from './Utils.js';
 
 const _seriesName = Math.random() * 10e6;
 
@@ -338,20 +338,45 @@ function groupStrToConfig(config) {
 /*
  根据字符串遍历objec
  */
-export function traceObject(obj, trace) {
-  if (typeof trace === 'string') {
-    trace = trace.split('.');
+export function traceObject(item, leafPath, fromList, toList, setList, _currentPath = '', _midResult = {}, countField) {
+    
+  if(noValue(item) || typeof item !== 'object') {
+    return [];
   }
-  if (typeof obj !== 'object' || noValue(obj)) {
-    return;
+  
+  const field = leafPath.replace(_currentPath, '').replace(/^\./g, '').split('.').shift();
+  
+  if(field === undefined) {
+    return [];
   }
 
-  const field = trace.shift();
-  const value = obj[field];
-  if (!trace.length) {
-    return value;
+  for (let key in item) {
+    let keyPath = (_currentPath + '.' + key).replace(/^\./g, ''); 
+    let toIndex = fromList.indexOf(keyPath);    
+    let value = item[key];
+    if(toIndex!== -1) {
+      _midResult[toList[toIndex]] = value;
+    }
   }
-  return traceObject(value, trace);
+  
+  const fieldValue = item[field];
+  const fieldPath = (_currentPath + '.' +  field).replace(/^\./g, '');
+  if(Array.isArray(fieldValue)) {  
+    let newMidResultList = [];
+    const count = fieldValue.length;
+    fieldValue.forEach((v, i) => {
+      const clone = snapShot(_midResult);
+      newMidResultList = newMidResultList.concat(
+        traceObject(v, leafPath, fromList, toList, setList, fieldPath, clone, countField))
+    });
+    (newMidResultList[0]) && (newMidResultList[0][countField.replace('{field}', field)] = count);
+    return newMidResultList;
+  }
+  if(typeof fieldValue === 'object'){
+    return traceObject(fieldValue, leafPath, fromList, toList, setList, fieldPath, _midResult, countField);
+  }
+  
+  return  [_midResult];
 }
 
 const myMethods = [];
@@ -411,9 +436,17 @@ export class TransformProcess {
   }
 
   @refReturn
-  fromModel(options) {
+  fromModel(config= {}) {
+    
+    let {
+      leafPath = '',
+      passings = [],
+      originField = '_origin',
+      countField = '_{field}Count'
+    } = config;
+    
     const list = [].concat(this.source);
-    options = [].concat(options).map(option => {
+    passings = [].concat(passings).map(option => {
       let from, to, set;
       if(typeof option === 'string'){
         from = option
@@ -422,7 +455,7 @@ export class TransformProcess {
       } else {
         from = option.from;
         to = option.to;
-        set = option.set || same;
+        set = option.set;
       }
       
       return {
@@ -431,6 +464,22 @@ export class TransformProcess {
         set
       };
     });
+    
+    const fromList = [];
+    const toList = [];
+    const setList = passings.map(({from, to, set}) => {
+      fromList.push(from);
+      toList.push(to);
+      return set;
+    })
+    
+    let outPutList = [];
+
+    list.forEach(item => {
+      outPutList = outPutList.concat(traceObject(item, leafPath, fromList, toList, setList, '', {[originField]: item}, countField));    
+    });
+
+    this.data = outPutList;
   }
   
   @refReturn
