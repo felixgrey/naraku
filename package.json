@@ -1,6 +1,6 @@
 {
   "name": "naraku",
-  "version": "0.0.29",
+  "version": "0.0.31",
   "description": "DataHub and Transformer for BI and OA",
   "repository": "https://github.com/felixgrey/naraku.git",
   "main": "lib/index.js",

@@ -55,3 +55,11 @@ export {localBaseUrl};
  */
 const stopRun = Math.random() * 10e6;
 export {stopRun};
+
+/*
+ 首字母大写
+ */
+function upperCase0(text = '') {
+  return `${text}`.replace(/^[a-z]{1}/, a => a.toUpperCase());
+}
+export {upperCase0};

@@ -381,8 +381,8 @@ function dependenceAndFilterPlugn(dataName, configInfo, dh) {
     for (let depName of dependence) {
       const depData = dh.get(depName);
       if(depData.length === 0) {
-        if(this.get(dataName).length !== 0) {
-          this.set(dataName, []);
+        if(dh.get(dataName).length !== 0) {
+          dh.set(dataName, []);
         }
         return;
       }

@@ -1,4 +1,4 @@
-import {noValue} from './Utils.js';
+import {noValue, same} from './Utils.js';
 
 const _seriesName = Math.random() * 10e6;
 
@@ -409,57 +409,28 @@ export class TransformProcess {
   filter(callback = a => a){
     this.data = ([].concat(this.source)).filter(callback);
   }
-  
+
   @refReturn
-  fromStructList(option) {
+  fromModel(options) {
     const list = [].concat(this.source);
-    if(typeof option !== 'object'){
-      return list;
-    }
-    const optionIsArray = Array.isArray(option);
-    if (optionIsArray) {
-      option = {default: option};
-    }
-    
-    const seriesMap = {};
-    
-    Object.keys(option).forEach(name => {
-      seriesMap[name] = [];
+    options = [].concat(options).map(option => {
+      let from, to, set;
+      if(typeof option === 'string'){
+        from = option
+        to = option.substr(option.lastIndexOf('.'));
+        set = same;
+      } else {
+        from = option.from;
+        to = option.to;
+        set = option.set || same;
+      }
+      
+      return {
+        from,
+        to,
+        set
+      };
     });
-    
-    list.forEach(item => {
-      Object.keys(option).forEach(name => {
-        const _item ={};
-        const fields = option[name];
-        fields.forEach(fieldMap => {
-          const {
-            from,
-            to,
-            default: _default,
-            set
-          } = fieldMap;
-          
-          const froms = from.split('|');
-          let value;
-          for (let _from of froms) {
-            value = traceObject(item, _from);
-            if(value !== undefined){
-              break;
-            }
-          }
-          value = set ? set(value, item) : value;
-          value = value === undefined ? _default : value;
-          _item[to] = value;
-        }); 
-        seriesMap[name].push(_item);
-      });
-    });
-    
-    if(optionIsArray){
-      this.data = seriesMap.default;
-    }else {
-      this.data = seriesMap;
-    }
   }
   
   @refReturn
