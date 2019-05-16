@@ -1,4 +1,4 @@
-import {noValue, stopRun, blank, errorLog, snapShot} from './Utils.js';
+import {noValue, stopRun, blank, errorLog, snapshot} from './Utils.js';
 
 let _Emitter = null;
 let dataHubKey = 1;
@@ -425,7 +425,7 @@ const _dataHubPlugin = {
     } = configInfo;
     
     if(_default !== undefined) {
-      dh.set(dataName, snapShot(_default));
+      dh.set(dataName, snapshot(_default));
     }
   },
   reset: (dataName, configInfo, dh) => {
@@ -438,7 +438,7 @@ const _dataHubPlugin = {
       const doReset = (_default === undefined) ? () => {
         dh.set(dataName, []);
       } : () => {
-        dh.set(dataName, snapShot(_default));
+        dh.set(dataName, snapshot(_default));
       };
       dh._controller.when(reset, doReset);
     }
@@ -612,7 +612,7 @@ export class DataHub {
   
   @ifInvalid()
   snapshot(from, to) {
-    this.set(to, snapShot(this.get(from)));
+    this.set(to, snapshot(this.get(from)));
   }
   
   @ifInvalid()
@@ -621,7 +621,7 @@ export class DataHub {
     if(!cfg || cfg.default === undefined) {
       this.delete(name);
     } else {
-      this.set(name, snapShot(cfg.default));
+      this.set(name, snapshot(cfg.default));
     }
   }
   

@@ -25,7 +25,7 @@ export {errorLog};
 /*
   数据快照 
 */
-export function snapShot(data) {
+export function snapshot(data) {
   if (noValue(data) || typeof data !== 'object') {
     return data;
   }

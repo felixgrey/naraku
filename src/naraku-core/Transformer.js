@@ -1,4 +1,4 @@
-import {noValue, same, snapShot} from './Utils.js';
+import {noValue, same, snapshot} from './Utils.js';
 
 const _seriesName = Math.random() * 10e6;
 
@@ -384,7 +384,7 @@ export function traceObject(item, leafPath, fromList, toList, setList, _currentP
     let newMidResultList = [];
     const count = fieldValue.length;
     fieldValue.forEach((v, i) => {
-      const clone = snapShot(_midResult);
+      const clone = snapshot(_midResult);
       newMidResultList = newMidResultList.concat(
         traceObject(v, leafPath, fromList, toList, setList, fieldPath, clone, countField))
     });
