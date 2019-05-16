@@ -53,7 +53,7 @@ export {localBaseUrl};
 /*
  停止运行标记
  */
-const stopRun = Math.random() * 10e6;
+const stopRun ='stop-'+ Math.random() * 10e6 + '-' + Math.random() * 10e6;
 export {stopRun};
 
 /*
@@ -63,3 +63,77 @@ function upperCase0(text = '') {
   return `${text}`.replace(/^[a-z]{1}/, a => a.toUpperCase());
 }
 export {upperCase0};
+
+/*
+  数字格式化
+ */
+const NumberFormat = {
+  percent: function(number, extendParam = {}) {
+    const {
+      fixed = 2,
+      forceFixed = false,
+      decimal = true,
+      noSymbol = false,
+      noZero = false,
+      blank = '--'
+    } = extendParam;
+
+    const percentSymbol = noSymbol ? '' : '%'
+    
+    if (noValue(number) || isNaN(+number)) {
+      return  blank;
+    }
+    
+    number = new Number(number * (decimal ? 100 : 1)).toFixed(fixed);
+    if (!forceFixed) {
+      number = number.replace(/(\.\d*?)[0]*$/g, (a, b) => b.replace(/\.$/g, ''));
+    }
+    
+    if (noZero) {
+      number = number.replace(/^0\./g, '.');
+    }
+
+    return  number + percentSymbol;
+  },
+  thsepar: function (number, extendParam = {}) {
+     const {
+      fixed = 2,
+      forceFixed = false,
+      noZero = false,
+      blank = '--'
+    } = extendParam;
+    
+    if (noValue(number) || isNaN(+number)) {
+      return  blank;
+    }
+
+    let number2 = parseInt(number);
+    let decimal = number - number2;
+  
+    if (isNaN(number2) || isNaN(decimal)){
+       return  blank;
+    }
+  
+    number2 = Array.from(`${number2}`)
+      .reverse()
+      .map((c, index) => index % 3 === 0 ? c + ',' : c)
+      .reverse()
+      .join('')
+      .replace(/,$/g, '');
+  
+    if (decimal) {
+      number2 = number2 + new Number(decimal).toFixed(fixed).replace('0.', '.');      
+    }
+    
+    if (noZero) {
+      number2 = number2.replace(/^0\./g, '.');
+    }
+    
+    if (!forceFixed) {
+      number2 = number2.replace(/(\.\d*?)[0]*$/g, (a, b) => b.replace(/\.$/g, ''));
+    }
+
+    return number2;
+  }
+};
+export {NumberFormat};
