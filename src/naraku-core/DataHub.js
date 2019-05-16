@@ -420,12 +420,38 @@ const _dataHubPlugin = {
   dependence: dependenceAndFilterPlugn,
   filter: dependenceAndFilterPlugn,
   default: (dataName, configInfo, dh) => {
-     let {
+    let {
       default: _default
     } = configInfo;
     
     if(_default !== undefined) {
       dh.set(dataName, snapShot(_default));
+    }
+  },
+  reset: (dataName, configInfo, dh) => {
+    let {
+      reset,
+      default: _default
+    } = configInfo;
+
+    if(reset !== undefined) {
+      const doReset = (_default === undefined) ? () => {
+        dh.set(dataName, []);
+      } : () => {
+        dh.set(dataName, snapShot(_default));
+      };
+      dh._controller.when(reset, doReset);
+    }
+  },
+  clear: (dataName, configInfo, dh) => {
+    let {
+      clear
+    } = configInfo;
+    
+    if(clear !== undefined) {
+      dh._controller.when(clear, () => {
+        dh.set(dataName, []);
+      });
     }
   }
 };

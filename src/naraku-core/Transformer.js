@@ -21,6 +21,25 @@ const _aggregates = {
     }
     return (data[tempValueKey] += itemValue) / (keyCounts + 1);
   },
+  // 中位数
+  'median': ({field, item, defaultValue, keyCounts, data}) => {
+    const itemValue = noValue(item[field]) ? defaultValue : item[field];    
+    const tempValueKey = `_currentMedianValue.${field}`;
+    if (data[tempValueKey] === undefined) {
+      data[tempValueKey] = [];
+    }
+    data[tempValueKey].push(itemValue);
+    data[tempValueKey].sort();
+    const _keyCounts = (keyCounts + 1);
+    if (_keyCounts % 2) {
+      return data[tempValueKey][(_keyCounts - 1) / 2];
+    } else {
+      const medIndex = _keyCounts / 2;
+      const a = data[tempValueKey][medIndex];
+      const b = data[tempValueKey][medIndex -1];
+      return (a + b) / 2;
+    }
+  },
   // 最大值
   'max': ({field, value, item, defaultValue}) => { 
     const currentValue = noValue(value) ? -Infinity: value;
@@ -281,7 +300,7 @@ export class DataSetTransformer {
   } 
   
   /*
-     分组后各组值得枚举
+       分组后各组值的枚举
    */
   getEnums(){
     const fields = {};
