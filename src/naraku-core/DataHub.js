@@ -147,6 +147,11 @@ export class Controller {
   }
   
   @ifInvalid()
+  hasRunner(name) {
+    return this._executor.has(name);
+  }
+  
+  @ifInvalid()
   first(name) {
     return this._dataHub.first(name);
   }
@@ -712,8 +717,8 @@ export class DataHub {
       clearTimeout(index);
     });
     this._emitter.emit('$storeDestroy', this._emitter);
-    this._executor.destroy();
     this._controller.destroy();
+    this._executor.destroy();
     this._lagFetchTimeoutIndex = null;
     this._executor = null;
     this._emitter = null;
