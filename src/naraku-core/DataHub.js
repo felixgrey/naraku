@@ -513,12 +513,17 @@ export class DataHub {
     }
   }
   
+  beforeSet(name, value) {
+    return value;
+  };
+  
   @ifInvalid()
   set(name, value){
     if(this.status(name) === 'locked'){
       errorLog(`can not ${name} when locked`);
       return;
     }
+    value = this.beforeSet(name, value);
     if(!this._validate(value)){
       value = [];
     }
@@ -593,9 +598,13 @@ export class DataHub {
     return DataHub.bind(this, that);
   }
   
+  beforeGet(name, value){
+    return value;
+  }
+  
   @ifInvalid()
   get(name) {
-    return this._data[name] || [];
+    return this.beforeGet(name, this._data[name] || []);
   }
   
   @ifInvalid()
@@ -673,7 +682,7 @@ export class DataHub {
       }
       
       this.status(name, 'loading');      
-      const param = this._fetchParam[name]
+      const param = this._fetchParam[name] || {};
       delete this._fetchParam[name];
       
       Promise.resolve(DataHub.dh._controller.run('beforeFetcher', [param, this]))
@@ -695,6 +704,9 @@ export class DataHub {
           this.status(name, 'set');
         } else {
           errorLog(e);
+          if(!this._data[name]){
+            this.set(name, []);
+          }
           this.status(name, 'error');
           this.emit('$error', e);
           this.emit('$error:' + name, e);
