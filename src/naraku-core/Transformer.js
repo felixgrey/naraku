@@ -1,4 +1,4 @@
-import {noValue, same, snapshot} from './Utils.js';
+import {noValue, same, blank, snapshot} from './Utils.js';
 
 const _seriesName = Math.random() * 10e6;
 
@@ -357,40 +357,54 @@ function groupStrToConfig(config) {
 /*
  根据字符串遍历objec
  */
-export function traceObject(item, valuePath, _currentPath = '', _midResult = {}, countField, display = true) {
+export function traceObject(item, valuePath, display = true, traceCallback, _midResult, countField, _currentPath = '') {
   if(noValue(item) || typeof item !== 'object') {
     return [];
   }
   
-  const field = valuePath.replace(_currentPath, '').replace(/^\./g, '').split('.').shift();
+  traceCallback = traceCallback || blank;
   
+  if(_currentPath.replace(/^\./g, '') === '') {
+    traceCallback('', item, _midResult);
+  }
+  
+  const surplusFields = valuePath.replace(_currentPath, '').replace(/^\./g, '').split('.'); 
+  const field = surplusFields.shift();
+
   if(field === undefined) {
     return [];
   }
+  _midResult = _midResult || {};
   
   const fieldValue = item[field];
+  
   if (fieldValue === null) {
+    traceCallback(fieldPath, null, null);
     return [null];
   }
-  const fieldPath = (_currentPath + '.' +  field).replace(/^\./g, '');
   
+  const fieldPath = (_currentPath + '.' +  field).replace(/^\./g, '');
   if(Array.isArray(fieldValue) && display) {  
     let newMidResultList = [];
     const count = fieldValue.length;
     fieldValue.forEach((v, i) => {
       const clone = snapshot(_midResult);
-      newMidResultList = newMidResultList.concat(
-        traceObject(v, valuePath, fieldPath, clone, countField, display))
+      traceCallback(fieldPath, v, clone);
+      newMidResultList = newMidResultList
+        .concat(traceObject(v, valuePath, display, traceCallback, clone, countField, fieldPath));
     });
-    (newMidResultList[0]) && (newMidResultList[0][countField.replace('{field}', field)] = count);
+    (!noValue(countField) && countField !== false) && (newMidResultList[0])
+      && (newMidResultList[0][countField.replace('{field}', field)] = count);
     return newMidResultList;
   }
   
-  if(typeof fieldValue === 'object') {
-    return traceObject(fieldValue, valuePath, fieldPath, _midResult, countField, display);
+  if(typeof fieldValue === 'object' && surplusFields.length) {
+    traceCallback(fieldPath, fieldValue, _midResult);
+    return traceObject(fieldValue, valuePath, display, traceCallback, _midResult, countField, fieldPath);
   }
   
-  return  [_midResult];
+  _midResult[field] = fieldValue;
+  return [_midResult];
 }
 
 const myMethods = [];
@@ -461,51 +475,43 @@ export class TransformProcess {
     
     const list = [].concat(this.source);
     branch = [].concat(branch).map(option => {
-      let from, to, set;
+      let from, to, leaf, set;
       if(typeof option === 'string'){
-        from = option
-        to = option.substr(option.lastIndexOf('.'));
+        from = option;
+        to = option.substr(option.lastIndexOf('.') + 1);
+        leaf = to;
         set = same;
       } else {
         from = option.from;
         to = option.to;
+        leaf = option.substr(option.lastIndexOf('.') + 1);
         set = option.set;
       }
       
-      return {
-        from,
-        to,
-        set
-      };
+      return {from, to, leaf, set};
     });
     
-    const fromList = [];
-    const toList = [];
-    const setList = branch.map(({from, to, set}) => {
-      fromList.push(from);
-      toList.push(to);
-      return set;
-    })
-    
     let outPutList = [];
-    
+    const fromList = branch.map(a => a.from);   
     const buildSeed = (originField === false) ? () => ({}) : (item) => ({[originField]: item}) 
 
     list.forEach(item => {
-      const mergedItem = {};
-      branch.forEach(({from, to, set}) => {      
-        const [value] = traceObject(item, from,  '', {}, countField, false);
-        if (value !== undefined) {
-          mergedItem[to] = value;
-        }
-      });
-
-      const expendItems = traceObject(item, main,  '', buildSeed(item), countField);
-      
-      expendItems.forEach(item2 => {
-        Object.assign(item2, snapshot(mergedItem));
-      })
-      
+      // item, valuePath, display, traceCallback, _midResult, countField, _currentPath
+      const expendItems = traceObject(item, main, true, function(fieldPath, v, mid){
+        fromList.forEach((from, index) => {
+          if (from.indexOf(fieldPath) === 0 ) {
+            const field = from.replace(fieldPath, '').replace(/^\./g, '');
+            if (field !== '') {
+              const {to, leaf, set} = branch[index];
+              const [value] = traceObject(v, field, false);
+              
+              if(!noValue(value) && !noValue(value[leaf])){
+                mid[to] = set(value[leaf]);
+              }
+            }
+          };       
+        });
+      }, buildSeed(item), countField);
       outPutList = outPutList.concat(expendItems);    
     });
 

@@ -102,8 +102,8 @@ export class Executor {
     
     const befores = this._before[name] || [];
     let newArgs = args;
-    for (let before in befores) {
-      newArgs = before(newArgs, args);
+    for (let before of befores) {
+      newArgs = before && before(newArgs, args);
       if(newArgs === stopRun) {
         return stopRun;
       }
@@ -112,8 +112,8 @@ export class Executor {
     const result = this._runner[name](...newArgs);
     const afters = this._after[name] || [];
     let newResult = result
-    for (let after in afters) {
-      newResult = after(newResult, result, newArgs, args);
+    for (let after of afters) {
+      newResult = after && after(newResult, result, newArgs, args);
     }
     
     return newResult;
