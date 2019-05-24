@@ -676,6 +676,9 @@ export class DataHub {
     
     clearTimeout(this._lagFetchTimeoutIndex[name]);
     this._lagFetchTimeoutIndex[name] = setTimeout(() => {
+      if (this._invalid) {
+        return;
+      }
       if(this.status(name) === 'loading') {
         errorLog(`${name} can not be fetched when loading`);
         return;
@@ -687,7 +690,7 @@ export class DataHub {
       
       Promise.resolve(DataHub.dh._controller.run('beforeFetcher', [param, this]))
       .then((newParam) => {
-        if(newParam === stopRun) {
+        if(newParam === stopRun || this._invalid) {
           return Promise.reject(stopRun);
         }
         return DataHub.dh._controller.run(type, {...extend, param, data: this.get(name)});
@@ -700,6 +703,9 @@ export class DataHub {
         this.emit('$fetchEnd', newResult);
         this.emit('$fetchEnd:' + name, newResult);
       }).catch((e) => {
+        if (this._invalid) {
+          return;
+        }
         if (e === stopRun) {
           this.status(name, 'set');
         } else {
