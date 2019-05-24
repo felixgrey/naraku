@@ -481,11 +481,11 @@ export class TransformProcess {
         to = option.substr(option.lastIndexOf('.') + 1);
         leaf = to;
         set = same;
-      } else {
+      } else {       
         from = option.from;
-        to = option.to;
-        leaf = option.substr(option.lastIndexOf('.') + 1);
-        set = option.set;
+        leaf = from.lastIndexOf('.') + 1;
+        to = option.to || from.lastIndexOf('.') + 1;
+        set = option.set || same;
       }
       
       return {from, to, leaf, set};
