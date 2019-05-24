@@ -206,12 +206,15 @@ export class Controller {
     return this.when(name, callback, true);
   }
   
-    
+  @ifInvalid(false)
+  loading(name) {
+    return this._dataHub.loading(name);
+  }
+  
   @ifInvalid(false)
   ready(list) {
     return this._dataHub.ready(list);
   }
-  
 
   @ifInvalid()
   destroy() {
@@ -523,22 +526,29 @@ export class DataHub {
       errorLog(`can not ${name} when locked`);
       return;
     }
-    value = this.beforeSet(name, value);
     if(!this._validate(value)){
       value = [];
     }
     const data =  [].concat(value);
-    this.status(name, 'set');
+    value = this.beforeSet(name, value);
     if(this._checkChange(name, data)){
       this._data[name] = data;
+      this.status(name, 'set');
       this._emitter.emit('$dataChange', {name,data});
       this._emitter.emit(name, data);
+    } else {
+      this.status(name, 'set');
     }
   }
   
   @ifInvalid(false)
   ready(list){
     return ([].concat(list)).reduce((a, b) => (a && this.status(b) === 'set'), true);
+  }
+  
+  @ifInvalid(false)
+  loading(name) {
+    return this.status(name) === 'loading';
   }
   
   @ifInvalid()
