@@ -483,8 +483,8 @@ export class TransformProcess {
         set = same;
       } else {       
         from = option.from;
-        leaf = from.lastIndexOf('.') + 1;
-        to = option.to || from.lastIndexOf('.') + 1;
+        leaf = from.substr(from.lastIndexOf('.') + 1);
+        to = option.to || leaf;
         set = option.set || same;
       }
       
