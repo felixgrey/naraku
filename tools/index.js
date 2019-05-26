@@ -36,8 +36,17 @@ function run(command, echo = true) {
   });
 }
 
+function runList(list) {
+  let runIt = Promise.resolve();
+  list.forEach(cmd => {
+    runIt = runIt.then(() => run(cmd));
+  });
+  return runIt;
+}
+
 module.exports = {
   COLOR,
   colorFont,
-  run
+  run,
+  runList
 };
