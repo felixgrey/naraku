@@ -35,7 +35,7 @@ export class Executor {
   
   @ifInvalid()
   register(name, fun) {
-    if (noValue(name) || this._runner[name]) {
+    if (noValue(name)) {
       return;
     }
     
@@ -43,6 +43,10 @@ export class Executor {
       this._before[name] = null;
       this._after[name] = null;
       this._runner[name] = null;
+      return;
+    }
+    
+    if (this._runner[name]) {
       return;
     }
     
