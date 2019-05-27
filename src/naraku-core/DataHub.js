@@ -40,9 +40,9 @@ export class Executor {
     }
     
     if(fun === false) {
-      delete this._before[name];
-      delete this._after[name];
-      delete this._runner[name];
+      this._before[name] = null;
+      this._after[name] = null;
+      this._runner[name] = null;
       return;
     }
     
