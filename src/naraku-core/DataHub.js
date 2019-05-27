@@ -222,7 +222,7 @@ export class Controller {
     clearTimeout(this._watchTimeoutIndex);   
     this._offList.forEach(off => off());
     this._runnerList.forEach(name => {
-      this._dataHub._executor && this._dataHub._executor.runner(name, false);
+      this._dataHub._executor && this._dataHub._executor.register(name, false);
     });    
     this._runnerList = null;
     this._offList = null;
