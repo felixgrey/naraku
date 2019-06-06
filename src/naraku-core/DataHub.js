@@ -257,6 +257,18 @@ export class Controller {
   }
   
   @ifInvalid()
+  fetch = (type, param = {}) => {
+    const tempDataName = '' + Math.random();
+    this._dataHub.doFetch(type, tempDataName, param, {});
+    return new Promise((resolve) => {
+      this.once('$fetchEnd:' + tempDataName, (data) => {
+        resolve(data);
+        this._dataHub.delete(tempDataName);
+      });
+    });
+  }
+  
+  @ifInvalid()
   once = (name, callback) => {
     if (this._invalid) {
       return;
@@ -367,7 +379,7 @@ function toObjParam(param){
   return param;
 }
 
-function dependenceAndFilterPlugn(dataName, configInfo, dh) {
+function typePlugn(dataName, configInfo, dh) {
   let {
     type,
     dependence = [],
@@ -428,9 +440,7 @@ function dependenceAndFilterPlugn(dataName, configInfo, dh) {
 }
 
 const _dataHubPlugin = {
-  type: dependenceAndFilterPlugn,
-  dependence: dependenceAndFilterPlugn,
-  filter: dependenceAndFilterPlugn,
+  type: typePlugn,
   default: (dataName, configInfo, dh) => {
     let {
       default: _default
