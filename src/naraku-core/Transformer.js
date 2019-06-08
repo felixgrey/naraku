@@ -526,7 +526,8 @@ export class TransformProcess {
     
     let {
       firstIsFileds = true,
-      fields = null
+      fields = null,
+      byFields = true
     } = config;
     
     const first = this.source[0];
@@ -542,10 +543,22 @@ export class TransformProcess {
       this.source.shift();
     }
     
+    if(this.source.length && !byFields) {
+      const fl = fields.length;
+      const sl = this.source[0].length
+      if(fl < sl){
+        for(let i = fl; i<sl; i++) {
+          fields.push(i);
+        }
+      }
+    }
+    
+    
+    
     this.data = this.source.map(arrItem => {
       const objItem = {};
-      arrItem.forEach((v, i) => {
-        objItem[fields[i]] = v;
+      fields.forEach((field, i) => {
+        objItem[field] = arrItem[i];
       });
       return objItem;
     });

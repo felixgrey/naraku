@@ -667,10 +667,9 @@ export class DataHub {
   delete(name) {
     delete this._data[name];
     delete this._status[name];
-    this.emit('$dataChange');
-    this.emit('$dataChange:' + name);
-    this.emit('$statusChange');
-    this.emit('$statusChange:' + name);
+    this.status(name, 'undefined');
+    this.emit('$dataChange',{name});
+    this.emit('$delete', name);
   }
   
   @ifInvalid()
