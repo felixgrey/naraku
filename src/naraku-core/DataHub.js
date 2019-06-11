@@ -211,8 +211,8 @@ export class Controller {
   }
   
   @ifInvalid(false)
-  loading(name) {
-    return this._dataHub.loading(name);
+  loading(list) {
+    return this._dataHub.loading(list);
   }
   
   @ifInvalid(false)
@@ -561,8 +561,8 @@ export class DataHub {
   }
   
   @ifInvalid(false)
-  loading(name) {
-    return this.status(name) === 'loading';
+  loading(list) {
+    return ([].concat(list)).reduce((a, b) => (a || this.status(b) === 'loading'), false);
   }
   
   @ifInvalid()

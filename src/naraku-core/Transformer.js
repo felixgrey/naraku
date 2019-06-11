@@ -552,9 +552,7 @@ export class TransformProcess {
         }
       }
     }
-    
-    
-    
+
     this.data = this.source.map(arrItem => {
       const objItem = {};
       fields.forEach((field, i) => {
