@@ -311,7 +311,7 @@ export class Controller {
       
       let offList = [];
       
-      const wrapedCallback = () => {
+      const checkReady = () => {
         let ready = true;
         let dataList = [];
         
@@ -324,13 +324,39 @@ export class Controller {
           dataList.push(this._dataHub.get(_name));
         }
         
+        return {
+          ready,
+          dataList
+        }
+      }
+      
+      const wrapedCallback = () => {
+        
+        const {
+          ready,
+          dataList
+        } = checkReady();
+        
         if(ready) {
           callback(dataList);
         }
       };
       
+      const {
+        ready,
+        dataList
+      } = checkReady();
+
+      if(ready) {
+        callback(dataList);
+        if (_once) {
+          return blank;
+        }
+      }
+
+      let fun = _once ? 'once' : 'on';
       name.forEach(_name => {
-        offList.push(this._when(_name, wrapedCallback, _once));
+        offList.push(this[fun](_name, wrapedCallback));
       });
       
       return () => {
