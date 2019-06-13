@@ -301,6 +301,25 @@ export class Controller {
     
     callback();
   }
+  
+  _checkReady =  (name) => {
+    if (this._invalid) {
+      return {ready: false};
+    }
+
+    let dataList = [];
+    for (let _name of name) {
+      if (this._dataHub.status(_name) !== 'set') {
+        return {ready: false};
+      }  
+      dataList.push(this._dataHub.get(_name));
+    }
+    
+    return {
+      ready: true,
+      dataList
+    }
+  }
 
   @ifInvalid(blank)
   when = (name, callback, _once = false) => {
@@ -310,32 +329,13 @@ export class Controller {
       }
       
       let offList = [];
-      
-      const checkReady = () => {
-        let ready = true;
-        let dataList = [];
-        
-        for (let _name of name) {
-          if (this._dataHub.status(_name) !== 'set') {
-            ready = false;
-            break;
-          }
-          
-          dataList.push(this._dataHub.get(_name));
-        }
-        
-        return {
-          ready,
-          dataList
-        }
-      }
-      
+
       const wrapedCallback = () => {
         
         const {
           ready,
           dataList
-        } = checkReady();
+        } = this._checkReady(name);
         
         if(ready) {
           callback(dataList);
@@ -345,7 +345,7 @@ export class Controller {
       const {
         ready,
         dataList
-      } = checkReady();
+      } = this._checkReady(name);
 
       if(ready) {
         callback(dataList);
@@ -366,6 +366,43 @@ export class Controller {
     }
     
     return this._when(name, callback, _once);
+  }
+  
+  @ifInvalid(blank)
+  all = (name, callback) => {
+    name = [].concat(name);
+    
+    let offList = [];
+    let stop = false;
+
+    const infiniteOnce = () => {
+      if (this._invalid) {
+        return;
+      }
+      
+      Promise.all(name.map(_n => new Promise(r => {
+       offList.push(this.once(_n, r));
+      }))).then(()=>{      
+        callback(this._checkReady(name).dataList);
+        offList = [];
+        (!stop) && infiniteOnce();
+      });
+    }
+    infiniteOnce();
+    
+    const {
+      ready,
+      dataList
+    } = this._checkReady(name);
+    
+    if (ready) {
+      callback(dataList);
+    }
+    
+    return () => {
+      stop = true;
+      offList.forEach(off => off());
+    };
   }
   
   @ifInvalid(blank)
