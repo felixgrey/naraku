@@ -246,6 +246,16 @@ export class Controller {
   }
   
   @ifInvalid()
+  before = (name, callback) => {
+    this._dataHub._executor.before(name, callback);
+  }
+  
+  @ifInvalid()
+  after = (name, callback) => {
+    this._dataHub._executor.after(name, callback);
+  }
+  
+  @ifInvalid()
   on = (name, callback) => {
     if (this._invalid) {
       return;
@@ -448,7 +458,8 @@ function typePlugn(dataName, configInfo, dh) {
     dependence = [],
     lazy = false,
     filter = [],
-    form = false
+    form = false,
+    pagination = false,
   } = configInfo;
 
   if (noValue(type) || type === 'static') {
@@ -459,9 +470,26 @@ function typePlugn(dataName, configInfo, dh) {
     lazy = true;
   }
   
+  if (pagination) {
+    const dpName = dataName + 'Pagination';
+    dependence = [].concat(dpName);
+    
+    const {
+      data = 'data',
+      total = 'total'
+    } = typeof pagination === 'object' ?  pagination : DataHub.pagination;
+    dh.set(dpName, {
+      [total]: 0
+    });
+    dh._controller.after('afterFetcher',(newResult, result, newArgs, args) => {
+      dh._data[dpName][0][total] = newResult[total];
+      return newResult[data];
+    });
+  }
+  
   dependence = [].concat(dependence);
   filter = [].concat(filter);
-  
+
   const $fetch = () => {
     const param = dh._fetchParam[dataName] = dh._fetchParam[dataName] || {};
 
@@ -484,7 +512,8 @@ function typePlugn(dataName, configInfo, dh) {
       Object.assign(param, toObjParam(filterData[0]));
     }
     
-    dh.doFetch(type, dataName, param, {form});
+    dh.doFetch(type, dataName, param, {form, pagination: !!pagination});
+
   }
   
   dh._executor.register('$refresh:' + dataName, $fetch);
@@ -541,6 +570,10 @@ const _dataHubPlugin = {
   }
 };
 
+const aroundFetch = ([a]) => {
+  return a;
+}
+
 function _runDataConfigPlugn(cfg, name, info, ds) {
   _dataHubPlugin[cfg] && _dataHubPlugin[cfg](name, info, ds);
 }
@@ -562,6 +595,9 @@ export class DataHub {
     this._status = {};
     this._fetchParam = {};
     this._config = config;
+
+    this._controller.register('beforeFetcher', aroundFetch);
+    this._controller.register('afterFetcher', aroundFetch);  
     
     this._init();
   }
@@ -774,7 +810,8 @@ export class DataHub {
       const param = this._fetchParam[name] || {};
       delete this._fetchParam[name];
       
-      Promise.resolve(DataHub.dh._controller.run('beforeFetcher', [param, this]))
+      Promise.resolve()
+      .then((param) => this._controller.run('beforeFetcher', [param, name]))
       .then((newParam) => {
         if(newParam === stopRun || this._invalid) {
           return Promise.reject(stopRun);
@@ -783,7 +820,11 @@ export class DataHub {
       })
       .then((result) => {
         return DataHub.dh._controller.run('afterFetcher', [result, this]);
-      }).then((newResult) => {
+      })
+      .then((result2) => {
+        return this._controller.run('afterFetcher', [result2, name]);
+      })
+      .then((newResult) => {
         newResult = [].concat(newResult);
         this.set(name, newResult);
         this.emit('$fetchEnd', newResult);
@@ -886,6 +927,10 @@ DataHub.pDhName = 'pDh';
 DataHub.dhCName = 'dhController';
 DataHub.pDhCName = 'pDhController';
 DataHub.gDhCName = 'gDhController';
+DataHub.pagination = {
+  data: 'data',
+  total: 'total'
+};
 
 DataHub.bindView = (dataHub, updateView = () => blank) => {
   return {
