@@ -1,4 +1,4 @@
-import {noValue, stopRun, blank, errorLog, snapshot} from './Utils.js';
+import {noValue, stopRun, blank, errorLog, snapshot, same} from './Utils.js';
 
 let _Emitter = null;
 let dataHubKey = 1;
@@ -470,9 +470,11 @@ function typePlugn(dataName, configInfo, dh) {
     lazy = true;
   }
   
+  dependence = [].concat(dependence);
+  
   if (pagination) {
     const dpName = dataName + 'Pagination';
-    dependence = [].concat(dpName);
+    dependence = dependence.concat(dpName);
     
     const {
       data = 'data',
@@ -489,12 +491,15 @@ function typePlugn(dataName, configInfo, dh) {
     dh.set(dpName, value);
     
     dh._controller.after('afterFetcher', (newResult, result, newArgs, args) => {
-      dh._data[dpName][0][total] = newResult[total];
-      return newResult[data];
+      if (args[1] === dataName) {
+        dh._data[dpName][0][total] = newResult[total];
+        return newResult[data];
+      }
+      return newResult;
     });
   }
   
-  dependence = [].concat(dependence);
+  
   filter = [].concat(filter);
 
   const $fetch = () => {
@@ -577,10 +582,6 @@ const _dataHubPlugin = {
   }
 };
 
-const aroundFetch = ([a]) => {
-  return a;
-}
-
 function _runDataConfigPlugn(cfg, name, info, ds) {
   _dataHubPlugin[cfg] && _dataHubPlugin[cfg](name, info, ds);
 }
@@ -603,8 +604,8 @@ export class DataHub {
     this._fetchParam = {};
     this._config = config;
 
-    this._controller.register('beforeFetcher', aroundFetch);
-    this._controller.register('afterFetcher', aroundFetch);  
+    this._controller.register('beforeFetcher', same);
+    this._controller.register('afterFetcher', same);  
     
     this._init();
   }
@@ -818,7 +819,8 @@ export class DataHub {
       delete this._fetchParam[name];
       
       Promise.resolve()
-      .then((param) => this._controller.run('beforeFetcher', [param, name]))
+      .then((param) => this._controller.run('beforeFetcher', param, name, this))
+      .then((param) => DataHub.dh._controller.run('beforeFetcher', param, name, this))
       .then((newParam) => {
         if(newParam === stopRun || this._invalid) {
           return Promise.reject(stopRun);
@@ -826,10 +828,10 @@ export class DataHub {
         return DataHub.dh._controller.run(type, {...extend, param, data: this.get(name)});
       })
       .then((result) => {
-        return DataHub.dh._controller.run('afterFetcher', [result, this]);
+        return DataHub.dh._controller.run('afterFetcher', result, name ,this);
       })
       .then((result2) => {
-        return this._controller.run('afterFetcher', [result2, name]);
+        return this._controller.run('afterFetcher', result2, name , this);
       })
       .then((newResult) => {
         newResult = [].concat(newResult);
@@ -908,13 +910,10 @@ DataHub.setEmitter = (Emitter) => {
   _Emitter = Emitter;
 
   DataHub.dh = DataHub.instance({}); 
+
+  DataHub.dh._controller.register('beforeFetcher', same);
+  DataHub.dh._controller.register('afterFetcher', same);  
   
-  const bf = ([a]) => {
-    return a;
-  }
-  
-  DataHub.dh._controller.register('beforeFetcher', bf);
-  DataHub.dh._controller.register('afterFetcher', bf);  
   DataHub.addBeforeFetcher = (callback) => {
     DataHub.dh._controller.before('beforeFetcher', callback);
   }
@@ -924,6 +923,12 @@ DataHub.setEmitter = (Emitter) => {
   DataHub.addFetcher = (name, callback) => {   
     DataHub.dh._controller.register(name, callback);
   }
+  
+  ['get', 'set', 'assign0', 'first'].forEach(funName => {
+    DataHub[funName] = (...args) => {
+      return DataHub.dh[funName](...args);
+    }
+  });
 }
 
 DataHub.inject = blank;
