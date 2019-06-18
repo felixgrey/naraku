@@ -436,15 +436,18 @@ export class TransformProcess {
   }
   
   @refReturn
-  fromObject(field = '_key') {  
+  fromObject(param = {}) {  
+    const {
+      key = 'key',
+      value = 'value'
+    } = param;
+
     let obj = this.source;
-    this.data = Object.keys(obj).map(key => {
-      const item = obj[key];
-      if(noValue(item) || typeof item === 'number') {
-        return item;
-      }
-      item[field] = key;
-      return item;
+    this.data = Object.keys(obj).map(_k => {
+      return {
+        [key]: _k,
+        [value]: obj[_k]
+      };
     });
   }
   
