@@ -137,3 +137,21 @@ const NumberFormat = {
   }
 };
 export {NumberFormat};
+
+/*
+  参数到query 
+*/
+export function paramToQuery(url = '', param = {}) {
+  url = url.split('#');
+  let query = [];
+  for (let q in param){
+    let v = param[q];
+    if(!noValue(v)){
+      query.push(`${q}=${encodeURIComponent(v)}`);
+    }
+  }
+  query = (url[0].indexOf('?') === -1 ? '?': '&') + query.join('&') + (url.length > 1 ? '#' : '');
+  url.splice(1, 0, query);
+  return url.join('');
+}
+

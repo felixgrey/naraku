@@ -478,10 +478,17 @@ function typePlugn(dataName, configInfo, dh) {
       data = 'data',
       total = 'total'
     } = typeof pagination === 'object' ?  pagination : DataHub.pagination;
-    dh.set(dpName, {
+    
+    let value;
+    if(dh._config[dpName] && dh._config[dpName].default){
+      value = [].concat(dh._config[dpName].default)[0];
+    }
+    value = Object.assign((value || {}), {
       [total]: 0
     });
-    dh._controller.after('afterFetcher',(newResult, result, newArgs, args) => {
+    dh.set(dpName, value);
+    
+    dh._controller.after('afterFetcher', (newResult, result, newArgs, args) => {
       dh._data[dpName][0][total] = newResult[total];
       return newResult[data];
     });
@@ -538,7 +545,7 @@ const _dataHubPlugin = {
       default: _default
     } = configInfo;
     
-    if(_default !== undefined) {
+    if(_default !== undefined && !dh.get(dataName).length) {
       dh.set(dataName, snapshot(_default));
     }
   },
