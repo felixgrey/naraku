@@ -835,7 +835,11 @@ export class DataHub {
         return this._controller.run('afterFetcher', result2, name , this);
       })
       .then((newResult) => {
-        newResult = [].concat(newResult);
+        if (newResult === undefined) {
+          newResult = [];
+        } else {
+          newResult = [].concat(newResult);
+        }
         this.set(name, newResult);
         this.emit('$fetchEnd', newResult);
         this.emit('$fetchEnd:' + name, newResult);
