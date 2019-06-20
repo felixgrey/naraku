@@ -101,6 +101,7 @@ export class Executor {
   @ifInvalid()
   run(name, ...args){
     if (noValue(name) || !this._runner[name]) {
+      errorLog(`unknown runner ${name}`);
       return;
     }
     
