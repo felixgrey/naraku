@@ -942,9 +942,12 @@ DataHub.bind = blank;
 
 DataHub.dhName = 'dh';
 DataHub.pDhName = 'pDh';
+DataHub.gDhName = 'gDh';
+
 DataHub.dhCName = 'dhController';
 DataHub.pDhCName = 'pDhController';
 DataHub.gDhCName = 'gDhController';
+
 DataHub.pagination = {
   data: 'data',
   total: 'total'
@@ -977,6 +980,7 @@ DataHub.injectView = (config = null, updateView = () => blank, gDh = true) => {
       }
       
       if (gDh) {
+        that[DataHub.gDhName] = DataHub.dh
         that[DataHub.gDhCName] = DataHub.dh.controller();
         that[DataHub.gDhCName].watch(() => updateView.call(that));
       }
