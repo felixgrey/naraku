@@ -453,9 +453,9 @@ function toObjParam(param){
   return param;
 }
 
-function typePlugn(dataName, configInfo, dh) {
+function actionPlugn(dataName, configInfo, dh) {
   let {
-    type,
+    action = configInfo.type,
     dependence = [],
     lazy = false,
     filter = [],
@@ -463,7 +463,7 @@ function typePlugn(dataName, configInfo, dh) {
     pagination = false,
   } = configInfo;
 
-  if (noValue(type) || type === 'static') {
+  if (noValue(action) || action === 'static') {
     return;
   }
   
@@ -525,7 +525,7 @@ function typePlugn(dataName, configInfo, dh) {
       Object.assign(param, toObjParam(filterData[0]));
     }
     
-    dh.doFetch(type, dataName, param, {form, pagination: !!pagination});
+    dh.doFetch(action, dataName, param, {form, pagination: !!pagination});
 
   }
   
@@ -545,7 +545,8 @@ function typePlugn(dataName, configInfo, dh) {
 }
 
 const _dataHubPlugin = {
-  type: typePlugn,
+  action: actionPlugn,
+  type: actionPlugn,
   default: (dataName, configInfo, dh) => {
     let {
       default: _default
