@@ -205,12 +205,7 @@ export class Controller {
   status(...a) {
     return this._dataHub.status(...a);
   }
-  
-  @ifInvalid(blank)
-  load(name, callback){
-    return this.when(name, callback, true);
-  }
-  
+
   @ifInvalid(false)
   loading(list) {
     return this._dataHub.loading(list);
