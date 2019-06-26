@@ -1,1 +1,1 @@
-export  *  from './naraku-react-vue';
+export  *  from './naraku-for-view';

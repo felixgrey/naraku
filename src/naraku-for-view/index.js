@@ -1,4 +1,4 @@
-import { DataHub } from '../naraku-core';
+import { DataHub, errorLog, blank} from '../naraku-core';
 export  *  from '../naraku-core';
 
 function reactInject(Component, config, gDh) { 
@@ -35,10 +35,7 @@ function reactBind(dataHub, that) {
 }
 
 function vueInject(Component, config, gDh) {   
-  if(typeof Component === 'function'){
-    Component = new Component().vue || {};
-  }
-  
+
   const {afterCreated, beforeDestroy} = DataHub.injectView(config, function() {
     this.$forceUpdate();
   }, gDh);
@@ -73,12 +70,26 @@ function vueBind(dataHub, that) {
 
 DataHub.inject = (config, gDh) => {
   return Component => { 
-    if(typeof Component === 'function' && Component.prototype.isReactComponent) {
-      return reactInject(Component, config, gDh);
+    if (typeof Component === 'function') {
+      
+      if (Component.prototype.isReactComponent) {
+        return reactInject(Component, config, gDh);
+      }
+      
+      if (Component.prototype instanceof blank) {
+        const {vue} = new Component();
+        if(vue) {
+          return vueInject(vue, config, gDh);
+        }
+      }
     }
-    if(typeof Component === 'object' || (typeof Component === 'function' && Component.prototype.vue)) {
+
+    if (typeof Component === 'object') {
       return vueInject(Component, config, gDh);
     }
+
+    errorLog('unknown Component(not Vue or React component)');
+    return Component;
   }
 }
 
