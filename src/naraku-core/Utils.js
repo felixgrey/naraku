@@ -8,16 +8,17 @@ export function noValue(value) {
 /*
  默认函数系列
  */
-const blank = () => {};
-const Blank = blank;
+export function Blank(){}
+const blank = Blank;
 const blankNull = () => null;
 const same = a => a;
 export {
   blankNull,
   same,
   blank,
-  Blank
 };
+
+
 
 /*
  错误警告
