@@ -669,6 +669,11 @@ export class DataHub {
     return ([].concat(list)).reduce((a, b) => (a || this.status(b) === 'loading'), false);
   }
   
+  @ifInvalid(false)
+  error(list) {
+    return ([].concat(list)).reduce((a, b) => (a || this.status(b) === 'error'), false);
+  }
+  
   @ifInvalid()
   submit(name, param = {}) {
     const {
