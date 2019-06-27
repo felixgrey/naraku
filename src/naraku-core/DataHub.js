@@ -951,6 +951,10 @@ DataHub.pagination = {
 DataHub.bindView = (dataHub, updateView = () => blank) => {
   return {
     doBind: (that) => {
+      if (that[DataHub.pDhName]) {
+        errorLog('dataHub has bound.');
+        return;
+      }
       that[DataHub.pDhName] = dataHub;
       that[DataHub.pDhCName] = that[DataHub.pDhName].controller();
       that[DataHub.pDhCName].watch(() => updateView.call(that)); 
