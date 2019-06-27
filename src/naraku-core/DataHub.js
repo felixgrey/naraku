@@ -925,7 +925,7 @@ DataHub.setEmitter = (Emitter) => {
     DataHub.dh._controller.register(name, callback);
   }
   
-  ['get', 'set', 'assign0', 'first'].forEach(funName => {
+  ['get', 'set', 'assign0', 'first', 'emit'].forEach(funName => {
     DataHub[funName] = (...args) => {
       return DataHub.dh[funName](...args);
     }
