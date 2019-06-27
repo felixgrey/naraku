@@ -1,4 +1,4 @@
-import { DataHub, errorLog, blank} from '../naraku-core';
+import { DataHub, errorLog, Blank} from '../naraku-core';
 export  *  from '../naraku-core';
 
 function reactInject(Component, config, gDh) { 
@@ -76,7 +76,7 @@ DataHub.inject = (config, gDh) => {
         return reactInject(Component, config, gDh);
       }
       
-      if (Component.prototype instanceof blank) {
+      if (Component.prototype instanceof Blank) {
         const {vue} = new Component();
         if(vue) {
           return vueInject(vue, config, gDh);

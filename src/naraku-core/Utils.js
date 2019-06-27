@@ -8,9 +8,16 @@ export function noValue(value) {
 /*
  默认函数系列
  */
-export function blank(){}
-export function blankNull(){ return null}
-export function same(a){ return a}
+const blank = () => {};
+const Blank = blank;
+const blankNull = () => null;
+const same = a => a;
+export {
+  blankNull,
+  same,
+  blank,
+  Blank
+};
 
 /*
  错误警告
