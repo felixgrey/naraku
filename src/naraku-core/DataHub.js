@@ -930,6 +930,13 @@ DataHub.setEmitter = (Emitter) => {
       return DataHub.dh[funName](...args);
     }
   });
+  
+  ['when', 'all', 'on', 'once'].forEach(funName => {
+    DataHub[funName] = (...args) => {
+      return DataHub.dh._controller[funName](...args);
+    }
+  });
+  
 }
 
 DataHub.inject = blank;
