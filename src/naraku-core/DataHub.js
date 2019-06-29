@@ -4,7 +4,7 @@ let _Emitter = null;
 let dataHubKey = 1;
 let lagTime = 40;
 
-const emitterMethods = ['on', 'once', 'emit', 'off'];
+const emitterMethods = ['on', 'once', 'emit', 'off', 'destroy'];
 const statusList = ['undefined', 'loading', 'locked', 'set', 'error']; 
 
 function ifInvalid(result){
@@ -145,76 +145,6 @@ export class Controller {
     this._offList = [];
     this._runnerList = [];
   }
-  
-  @ifInvalid()
-  get(name) {
-    return this._dataHub.get(name);
-  }
-  
-  @ifInvalid()
-  hasRunner(name) {
-    return this._executor.has(name);
-  }
-  
-  @ifInvalid()
-  first(name) {
-    return this._dataHub.first(name);
-  }
-  
-  @ifInvalid()
-  refresh(name) {
-    return this._dataHub.refresh(name);
-  }
-  
-  @ifInvalid()
-  submit(name, param) {
-    return this._dataHub.submit(name, param);
-  }
-  
-  @ifInvalid()
-  set(name, value) {
-    return this._dataHub.set(name, value);
-  }
-  
-  @ifInvalid()
-  assign0(name, obj) {
-    return this._dataHub.assign0(name, obj);
-  }
-  
-  @ifInvalid()
-  delete(name) {
-    return this._dataHub.delete(name);
-  }
-  
-  @ifInvalid()
-  emit(name, ...args) {
-    return this._dataHub.emit(name, ...args);
-  }
-  
-  @ifInvalid()
-  snapshot(from, to) {
-    return this._dataHub.snapshot(from, to);
-  }
-  
-  @ifInvalid()
-  reset(name) {
-    return this._dataHub.reset(name);
-  }
-  
-  @ifInvalid()
-  status(...a) {
-    return this._dataHub.status(...a);
-  }
-
-  @ifInvalid(false)
-  loading(list) {
-    return this._dataHub.loading(list);
-  }
-  
-  @ifInvalid(false)
-  ready(list) {
-    return this._dataHub.ready(list);
-  }
 
   @ifInvalid()
   destroy() {
@@ -231,8 +161,104 @@ export class Controller {
   }
   
   @ifInvalid()
-  run(name, ...args) {
+  run = (name, ...args) => {
     return this._dataHub._executor.run(name, ...args);
+  }
+  
+  @ifInvalid()
+  get = (name) => {
+    return this._dataHub.get(name);
+  }
+  
+  @ifInvalid()
+  hasRunner = (name) => {
+    return this._dataHub._executor.has(name);
+  }
+  
+  @ifInvalid()
+  hasData = (name) => {
+    return this._dataHub.hasData(name);
+  }
+
+  @ifInvalid()
+  first = (name) => {
+    return this._dataHub.first(name);
+  }
+  
+  @ifInvalid()
+  refresh = (name) => {
+    return this._dataHub.refresh(name);
+  }
+  
+  @ifInvalid()
+  submit = (name, param) => {
+    return this._dataHub.submit(name, param);
+  }
+  
+  @ifInvalid()
+  set = (name, value) => {
+    return this._dataHub.set(name, value);
+  }
+  
+  @ifInvalid()
+  assign0 = (name, obj) => {
+    return this._dataHub.assign0(name, obj);
+  }
+  
+  @ifInvalid()
+  deleteData = (name) => {
+    return this._dataHub.delete(name);
+  }
+  
+  @ifInvalid()
+  emit = (name, ...args) => {
+    return this._dataHub.emit(name, ...args);
+  }
+  
+  @ifInvalid()
+  link = (name, dh2) => {
+    const dh2c = dh2.controller();
+    const dh2Off = dh2c.when(name, (data) => {
+      this.set(name, data);
+    });
+    
+    let hasOff = false;
+    const off = () => {
+      if(!hasOff){
+        hasOff = true;
+        dh2c.destroy();
+        this.delete(name);
+      }
+    }
+    
+    dh2._emitter.on('$storeDestroy', off);
+    
+    return off;
+  }
+  
+  @ifInvalid()
+  snapshot = (from, to) => {
+    return this._dataHub.snapshot(from, to);
+  }
+  
+  @ifInvalid()
+  reset = (name) => {
+    return this._dataHub.reset(name);
+  }
+  
+  @ifInvalid()
+  status = (...a) => {
+    return this._dataHub.status(...a);
+  }
+
+  @ifInvalid(false)
+  loading = (list) => {
+    return this._dataHub.loading(list);
+  }
+  
+  @ifInvalid(false)
+  ready = (list) => {
+    return this._dataHub.ready(list);
   }
   
   @ifInvalid()
@@ -486,6 +512,14 @@ function actionPlugn(dataName, configInfo, dh) {
     });
     dh.set(dpName, value);
     
+    dh._controller.after('beforeFetcher', (newParam, param, newArgs, args) => {
+      if (newParam && args[1] === dataName) {
+        newParam = {...newParam};
+        delete newParam[total];
+      }
+      return newParam;
+    });
+    
     dh._controller.after('afterFetcher', (newResult, result, newArgs, args) => {
       if (args[1] === dataName) {
         dh._data[dpName][0][total] = newResult[total];
@@ -523,6 +557,16 @@ function actionPlugn(dataName, configInfo, dh) {
     dh.doFetch(action, dataName, param, {form, pagination: !!pagination});
 
   }
+  
+  const lockList = dependence.concat(filter);
+  let unlock = blank;
+  dh._controller.on('$statusChange:' + dataName, (status)=>{
+    if(status === 'loading') {
+      unlock = dh.lock(lockList);
+    } else {
+      unlock();
+    }
+  });
   
   dh._executor.register('$refresh:' + dataName, $fetch);
   
@@ -607,7 +651,7 @@ export class DataHub {
     this._init();
   }
   
-  _init(){
+  _init() {
     const config = this._config;
     for (let dataName in config) {
       const configInfo = config[dataName];
@@ -623,17 +667,19 @@ export class DataHub {
     if (args.length === 1){
       return this._status[name] || 'undefined';
     }
+    
     if(statusList.indexOf(value) === -1){
       errorLog(`${name} status must be one of ${statusList.join(',')} but it is ${value}`);
       return;
     }
-    if (value !== this._status[name]) {
+    
+    if (value !== (this._status[name] || 'undefined')) {
       this._status[name] = value;
       this._emitter.emit('$statusChange', {name, value});
       this._emitter.emit('$statusChange:' + name, value);
     }
   }
-  
+
   beforeSet(name, value) {
     return value;
   };
@@ -674,6 +720,32 @@ export class DataHub {
     return ([].concat(list)).reduce((a, b) => (a || this.status(b) === 'error'), false);
   }
   
+  @ifInvalid(false)
+  hasData(name) {
+    return  this.status(name) !== 'undefined';
+  }
+  
+  @ifInvalid()
+  lock(names) {
+    const oldStatus = [];
+    let unlock = false;
+    names = [].concat(names);
+    
+    names.forEach(name => {
+      oldStatus.push(this.status(name));
+      this.status(name, 'locked');
+    });
+    
+    return () => {
+      if(!unlock){
+        unlock = true;
+        names.forEach((name, index) => {
+          this.status(name, oldStatus[index]);
+        });
+      }
+    };
+  }
+  
   @ifInvalid()
   submit(name, param = {}) {
     const {
@@ -687,21 +759,15 @@ export class DataHub {
       errorLog(`${name} is not ready, can not be submited`);
       return;
     }
-
-    const oldStatus = [].concat(lock).concat(refresh).map(lockName => {
-      let old = this.status(lockName);
-      this.status(lockName, 'locked');
-      return {name: lockName, status: old};
-    });
+    
+    const unlock = this.lock([].concat(lock).concat(refresh))
    
     this.set(name, data);
     this.refresh(name);
     
     const afterSubmit = (data) => {
       callback(data);
-      oldStatus.forEach(({name, status}) => {
-        this.status(name, status);
-      });
+      unlock();
       [].concat(refresh).forEach(refreshName => {
         this.refresh(refreshName);
       });
@@ -774,12 +840,16 @@ export class DataHub {
   
   @ifInvalid()
   delete(name) {
-    delete this._data[name];
-    delete this._status[name];
+    delete this._data[name]; 
+    
     this.status(name, 'undefined');
+    delete this._status[name];
+    
     this.emit('$dataChange',{name});
-    this.emit('$delete', name);
+    this.emit('$delete:' + name);
   }
+  
+  deleteData = this.delete;
   
   @ifInvalid()
   refresh(name) {
@@ -804,7 +874,7 @@ export class DataHub {
   }
   
   @ifInvalid()
-  doFetch(type, name, param, extend = {}) {
+  doFetch(action, name, param = {}, extend = {}) {
     
     clearTimeout(this._lagFetchTimeoutIndex[name]);
     this._lagFetchTimeoutIndex[name] = setTimeout(() => {
@@ -816,18 +886,18 @@ export class DataHub {
         return;
       }
       
-      this.status(name, 'loading');      
-      const param = this._fetchParam[name] || {};
+      this.status(name, 'loading');
       delete this._fetchParam[name];
-      
-      Promise.resolve()
+      param = snapshot(param);
+
+      Promise.resolve(param)
       .then((param) => this._controller.run('beforeFetcher', param, name, this))
       .then((param) => DataHub.dh._controller.run('beforeFetcher', param, name, this))
       .then((newParam) => {
         if(newParam === stopRun || this._invalid) {
           return Promise.reject(stopRun);
         }
-        return DataHub.dh._controller.run(type, {...extend, param, data: this.get(name)});
+        return DataHub.dh._controller.run(action, {...extend, param: newParam, data: snapshot(this.get(name))});
       })
       .then((result) => {
         return DataHub.dh._controller.run('afterFetcher', result, name ,this);
@@ -877,8 +947,11 @@ export class DataHub {
       clearTimeout(index);
     });
     this._emitter.emit('$storeDestroy', this._emitter);
+    
     this._controller.destroy();
     this._executor.destroy();
+    this._emitter.destroy();
+    
     this._lagFetchTimeoutIndex = null;
     this._executor = null;
     this._emitter = null;
