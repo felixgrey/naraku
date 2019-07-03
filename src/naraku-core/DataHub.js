@@ -505,8 +505,10 @@ function actionPlugn(dataName, configInfo, dh) {
     
     let value;
     if(dh._config[dpName] && dh._config[dpName].default){
-      value = [].concat(dh._config[dpName].default)[0];
+      const pgData = snapshot(dh._config[dpName].default);
+      value = [].concat(pgData)[0];
     }
+    
     value = Object.assign((value || {}), {
       [total]: 0
     });
