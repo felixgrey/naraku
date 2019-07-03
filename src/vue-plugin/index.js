@@ -2,7 +2,7 @@ export default {
   install(Vue) {
     Vue.mixin({
       created: function (arg) {
-        (!this.notBindDh) && (!this.pDh) && (this.$parent) && (this.$parent.$bindDh(this));
+        (!this.notBindDh) && (!this.dataHub) && (this.$parent) && (this.$parent.$bindDh(this));
       }
     });
     

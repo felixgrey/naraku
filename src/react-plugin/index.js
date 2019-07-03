@@ -7,11 +7,11 @@ var declareComponent = function(Component, PropTypes) {
 
   DhComponent =  function(props, context) {
     Component.call(this, props, context);
-    if (context && context.DataHub && !this.pDh) {
+    if (context && context.dataHub && !this.props.dataHub) {
       var oldcomponentWillMount = this.componentWillMount;
       
       this.componentWillMount = function dhComponentWillMount() {
-        context.DataHub.bind(this);
+        context.dataHub.bind(this);
         oldcomponentWillMount && oldcomponentWillMount.apply(this);
       };     
     }
@@ -23,16 +23,16 @@ var declareComponent = function(Component, PropTypes) {
   
   DhComponent.prototype.getChildContext = function() {
     return {
-      DataHub: this.dh,
+      dataHub: this.dh,
     };
   };
   
   DhComponent.contextTypes = {
-    DataHub: PropTypes.any
+    dataHub: PropTypes.any
   };
   
   DhComponent.childContextTypes = {
-    DataHub: PropTypes.any
+    dataHub: PropTypes.any
   };
 
   return DhComponent;
