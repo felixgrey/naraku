@@ -2,21 +2,11 @@ export default {
   install(Vue) {
     Vue.mixin({
       created: function (arg) {
-        (!this.notBindDh) && this.$bindDh();
+        (!this.notBindDh) && this.$parent && this.$parent.$bindDh(this);
       }
     });
     
-    Vue.prototype.$bindDh = function(_that = null) {
-
-      if (!this.$parent) {
-        return;
-      }
-      
-      if (!_that) {
-        this.$parent.$bindDh(this);
-        return;
-      }
-
+    Vue.prototype.$bindDh = function(_that = null) {    
       if (this.dh) {
         this.dh.bind(_that);
         return;
@@ -26,8 +16,10 @@ export default {
         this.pDh.bind(_that);
         return;
       }
-
+      
+      if (this.$parent) {
+        this.$parent.$bindDh(that);
+      }
     }
-
   }
 }
