@@ -6,20 +6,27 @@ export default {
       }
     });
     
-    Vue.prototype.$bindDh = function(that) {
-      that = that || this;
-      
-      if(this.dh && that !== this) {
-        this.dh.bind(that);
+    Vue.prototype.$bindDh = function(_that = null) {
+
+      if (!this.$parent) {
         return;
       }
       
-      if(this.pDh && that !== this) {
-        this.pDh.bind(that);
+      if (!_that) {
+        this.$parent.$bindDh(this);
+        return;
+      }
+
+      if (this.dh) {
+        this.dh.bind(_that);
         return;
       }
       
-      this.$parent && this.$parent.$bindDh(that);
+      if (this.pDh) {
+        this.pDh.bind(_that);
+        return;
+      }
+
     }
 
   }
