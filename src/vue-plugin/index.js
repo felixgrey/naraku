@@ -12,7 +12,7 @@ export default {
       } else if (this.pDh) {
         this.pDh.bind(_that);
       } else if (this.$parent) {
-        this.$parent.$bindDh(that);
+        this.$parent.$bindDh(_that);
       }
     }
   }
