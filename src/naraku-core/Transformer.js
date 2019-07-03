@@ -685,13 +685,17 @@ export class TransformProcess {
   toGrouped(config = {}){
     config = groupStrToConfig(config);
     
+    config.aggregate = config.aggregate || {};
+    config.valueFields = config.valueFields || []
+    
     if(config.originField !== false){
       if(noValue(config.originField)) {
         config.originField = '_origin';
       }
       
+      config.aggregate = config.aggregate || {};     
       config.aggregate[config.originField] = 'origin';
-      config.valueFields = [].concat(config.valueFields || []);
+      config.valueFields = [].concat(config.valueFields);
       config.valueFields.push(config.originField); 
     }
 
