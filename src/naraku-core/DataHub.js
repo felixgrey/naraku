@@ -504,10 +504,8 @@ function actionPlugn(dataName, configInfo, dh) {
     pagination = Object.assign({}, DataHub.pagination, pagination);
     
     const {
-      data,
-      total,
-      page,
-      limit
+      data = 'data',
+      total = 'total',
     } = pagination;
 
     let value = {};
@@ -516,7 +514,9 @@ function actionPlugn(dataName, configInfo, dh) {
       value = [].concat(pgData)[0] || {};
     }
     
-    value = Object.assign(snapshot(DataHub.paginationData), value);
+    value = Object.assign({
+      [total]: 0
+    }, DataHub.paginationData, value);
     dh.set(dpName, value);
     
     dh._controller.after('beforeFetcher', (newParam, param, newArgs, args) => {
@@ -1037,15 +1037,13 @@ DataHub.gDhCName = 'gDhController';
 
 DataHub.pagination = {
   data: 'data',
-  total: 'total',
-  page: 'page',
-  limit: 'limit'
+  total: 'total'
 };
 
 DataHub.paginationData = {
-  [DataHub.pagination.page]: 1,
-  [DataHub.pagination.limit]: 10,
-  [DataHub.pagination.total]: 0,
+  page: 1,
+  limit: 10,
+  total: 0,
 }
 
 DataHub.bindView = (dataHub, updateView = () => blank) => {
