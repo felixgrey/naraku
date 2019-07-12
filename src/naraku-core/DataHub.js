@@ -482,6 +482,7 @@ function actionPlugn(dataName, configInfo, dh) {
     filter = [],
     form = false,
     pagination = false,
+    first = false,
   } = configInfo;
 
   if (noValue(action) || action === 'static') {
@@ -543,7 +544,7 @@ function actionPlugn(dataName, configInfo, dh) {
     });
   }
 
-  const $fetch = () => {
+  const $fetch = (extendParam = {}) => {
     const param = dh._fetchParam[dataName] = dh._fetchParam[dataName] || {};
 
     for (let depName of dependence) {
@@ -565,7 +566,7 @@ function actionPlugn(dataName, configInfo, dh) {
       Object.assign(param, toObjParam(filterData[0]));
     }
     
-    dh.doFetch(action, dataName, param, {form, pagination: !!pagination});
+    dh.doFetch(action, dataName, param, {form, pagination: !!pagination, first, ...extendParam});
 
   }
   
@@ -765,7 +766,8 @@ export class DataHub {
       data = {},
       lock = [],
       refresh = [],
-      callback = blank
+      callback = blank,
+      extend = {}
     } = param;
     
     if(!this.ready(name) && this.status(name) !== 'undefined'){
@@ -776,7 +778,7 @@ export class DataHub {
     const unlock = this.lock([].concat(lock).concat(refresh))
    
     this.set(name, data);
-    this.refresh(name);
+    this.refresh(name, extend);
     
     const afterSubmit = (data) => {
       callback(data);
@@ -865,10 +867,10 @@ export class DataHub {
   deleteData = this.delete;
   
   @ifInvalid()
-  refresh(name) {
+  refresh(name, param) {
     const $refresh = '$refresh:' + name;
     if(this._executor.has($refresh)){
-      this._executor.run($refresh, true);
+      this._executor.run($refresh, param);
     } else {
       this._emitter.emit(name, this.get(name));
     } 
@@ -914,7 +916,11 @@ export class DataHub {
         if(newParam === stopRun || this._invalid) {
           return Promise.reject(stopRun);
         }
-        return DataHub.dh._controller.run(action, {...extend, param: newParam, data: snapshot(this.get(name))});
+        let submitData =  snapshot(this.get(name));
+        if (extend.first) {
+          submitData = submitData[0];
+        }
+        return DataHub.dh._controller.run(action, {...extend, param: newParam, data: submitData});
       })
       .then((result) => {
         return DataHub.dh._controller.run('afterFetcher', result, name ,this);
