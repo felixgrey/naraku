@@ -739,15 +739,17 @@ export class DataHub {
     names = [].concat(names);
     
     names.forEach(name => {
-      oldStatus.push(this.status(name));
-      this.status(name, 'locked');
+      if(this.status(name) !== 'locked'){
+        oldStatus.push({name, old:this.status(name)});
+        this.status(name, 'locked');
+      }
     });
     
     return () => {
       if(!unlock){
         unlock = true;
-        names.forEach((name, index) => {
-          this.status(name, oldStatus[index]);
+        oldStatus.forEach(({name, old}) => {
+          this.status(name, old);
         });
       }
     };
