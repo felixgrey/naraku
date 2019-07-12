@@ -493,9 +493,11 @@ function actionPlugn(dataName, configInfo, dh) {
   }
   
   dependence = [].concat(dependence);
-  
+  filter = [].concat(filter);
+
   if (pagination) {
     const dpName = dataName + 'Pagination';
+    const oldDep = dependence.concat(filter);
     dependence = dependence.concat(dpName);
     
     if(typeof pagination !== 'object'){
@@ -513,11 +515,16 @@ function actionPlugn(dataName, configInfo, dh) {
       const pgData = snapshot(dh._config[dpName].default);
       value = [].concat(pgData)[0] || {};
     }
-    
+
     value = Object.assign({
       [total]: 0
     }, DataHub.paginationData, value);
     dh.set(dpName, value);
+
+    let initValue = snapshot(value);
+    dh._controller.when(oldDep, () => {
+      dh.set(dpName, snapshot(initValue));
+    });
     
     dh._controller.after('beforeFetcher', (newParam, param, newArgs, args) => {
       if (newParam && args[1] === dataName) {
@@ -535,9 +542,6 @@ function actionPlugn(dataName, configInfo, dh) {
       return newResult;
     });
   }
-  
-  
-  filter = [].concat(filter);
 
   const $fetch = () => {
     const param = dh._fetchParam[dataName] = dh._fetchParam[dataName] || {};
@@ -546,7 +550,7 @@ function actionPlugn(dataName, configInfo, dh) {
       const depData = dh.get(depName);
       if(depData.length === 0) {
         if(dh.get(dataName).length !== 0) {
-          dh.set(dataName, []);
+          dh.doFetch(null, dataName, null, null, true);
         }
         return;
       }
@@ -694,7 +698,7 @@ export class DataHub {
   @ifInvalid()
   set(name, value){
     if(this.status(name) === 'locked'){
-      errorLog(`can not ${name} when locked`);
+      errorLog(`can not set ${name} when locked`);
       return;
     }
     if(!this._validate(value)){
@@ -883,14 +887,18 @@ export class DataHub {
   }
   
   @ifInvalid()
-  doFetch(action, name, param = {}, extend = {}) {
+  doFetch(action, name, param = {}, extend = {}, fetchBlank = false) {
     
     clearTimeout(this._lagFetchTimeoutIndex[name]);
+    if (fetchBlank) {
+      this.set(name, []);
+      return;
+    }
     this._lagFetchTimeoutIndex[name] = setTimeout(() => {
       if (this._invalid) {
         return;
       }
-      if(this.status(name) === 'loading') {
+      if (this.status(name) === 'loading') {
         errorLog(`${name} can not be fetched when loading`);
         return;
       }
