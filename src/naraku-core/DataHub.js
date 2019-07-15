@@ -43,19 +43,27 @@ export class Executor {
       this._before[name] = null;
       this._after[name] = null;
       this._runner[name] = null;
-      return;
+      return blank;
     }
     
     if (this._runner[name]) {
-      return;
+      return blank;
     }
     
     this._runner[name] = fun;
+    
+    let hasOff = false;
+    return () => {
+      if (!hasOff) {
+        hasOff = true;
+        this.register(name, false);
+      }
+    }
   }
   
   @ifInvalid()
-  has(name){
-   return  !!this._runner[name];
+  has(name) {
+   return !!this._runner[name];
   }
   
   @ifInvalid()
@@ -99,7 +107,7 @@ export class Executor {
   }
   
   @ifInvalid()
-  run(name, ...args){
+  run(name, ...args) {
     if (noValue(name) || !this._runner[name]) {
       errorLog(`unknown runner ${name}`);
       return;
@@ -264,12 +272,12 @@ export class Controller {
   @ifInvalid()
   register = (name, callback) => {
     this._runnerList.push(name);
-    this._dataHub._executor.register(name, callback);
+    return this._dataHub._executor.register(name, callback);
   }
   
   @ifInvalid()
   before = (name, callback) => {
-    this._dataHub._executor.before(name, callback);
+    return this._dataHub._executor.before(name, callback);
   }
   
   @ifInvalid()
@@ -1032,7 +1040,7 @@ DataHub.setEmitter = (Emitter) => {
     }
   });
   
-  ['when', 'all', 'on', 'once'].forEach(funName => {
+  ['when', 'all', 'on', 'once', 'register', 'run'].forEach(funName => {
     DataHub[funName] = (...args) => {
       return DataHub.dh._controller[funName](...args);
     }
