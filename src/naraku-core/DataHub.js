@@ -7,8 +7,8 @@ let lagTime = 40;
 const emitterMethods = ['on', 'once', 'emit', 'off', 'destroy'];
 const statusList = ['undefined', 'loading', 'locked', 'set', 'error']; 
 
-function ifInvalid(result){
-  return function(target, name, descriptor){
+function ifInvalid(result) {
+  return function(target, name, descriptor) {
     const oldFun = target[name];
     descriptor.value = function(...args) {
       if (this._invalid) {
@@ -47,6 +47,7 @@ export class Executor {
     }
     
     if (this._runner[name]) {
+      errorLog(`runner ${name} has registered`);
       return blank;
     }
     
@@ -349,7 +350,9 @@ export class Controller {
 
     let dataList = [];
     for (let _name of name) {
-      if (this._dataHub.status(_name) !== 'set') {
+      const noData = noValue(this._dataHub._data[_name]);
+      const status = this._dataHub.status(_name);    
+      if (noData || status === 'loading' || status === 'error') {
         return {ready: false};
       }  
       dataList.push(this._dataHub.get(_name));
@@ -862,6 +865,13 @@ export class DataHub {
   }
   
   @ifInvalid()
+  clear(name) {
+    if(this.hasData(name)) {
+      this.set(name, []);
+    }
+  }
+  
+  @ifInvalid()
   delete(name) {
     delete this._data[name]; 
     
@@ -898,12 +908,13 @@ export class DataHub {
   
   @ifInvalid()
   doFetch(action, name, param = {}, extend = {}, fetchBlank = false) {
-    
+
     clearTimeout(this._lagFetchTimeoutIndex[name]);
     if (fetchBlank) {
       this.set(name, []);
       return;
     }
+    
     this._lagFetchTimeoutIndex[name] = setTimeout(() => {
       if (this._invalid) {
         return;
@@ -1021,9 +1032,6 @@ DataHub.setEmitter = (Emitter) => {
 
   DataHub.dh = DataHub.instance({}); 
 
-  DataHub.dh._controller.register('beforeFetcher', same);
-  DataHub.dh._controller.register('afterFetcher', same);  
-  
   DataHub.addBeforeFetcher = (callback) => {
     DataHub.dh._controller.before('beforeFetcher', callback);
   }
