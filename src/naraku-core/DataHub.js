@@ -556,7 +556,7 @@ function actionPlugn(dataName, configInfo, dh) {
   }
 
   const $fetch = (extendParam = {}) => {
-    const param = dh._fetchParam[dataName] = dh._fetchParam[dataName] || {};
+    const param = {};
 
     for (let depName of dependence) {
       const depData = dh.get(depName);
@@ -618,6 +618,22 @@ const _dataHubPlugin = {
       dh.set(dataName, snapshot(_default));
     }
   },
+  snapshot: (dataName, configInfo, dh) => {
+    let {
+      snapshot,
+    } = configInfo;
+    
+    if (noValue(snapshot)) {
+      return;
+    }
+
+    [].concat(snapshot).forEach(name => {
+      dh._controller.when(name, () => {
+        dh.snapshot(name, dataName);
+      });
+    });
+
+  },
   reset: (dataName, configInfo, dh) => {
     let {
       reset,
@@ -665,7 +681,6 @@ export class DataHub {
     this._lagFetchTimeoutIndex = {};
     this._data = {};
     this._status = {};
-    this._fetchParam = {};
     this._config = config;
 
     this._controller.register('beforeFetcher', same);
@@ -729,6 +744,23 @@ export class DataHub {
   }
   
   @ifInvalid(false)
+  hasData(name) {
+    return  this.status(name) !== 'undefined';
+  }
+  
+  _blank(name) {
+    if (!this._data[name] || this._data[name].length !== 0 || this.loading(name)) {
+      return false;
+    }
+    return true;
+  }
+  
+  @ifInvalid(true)
+  blank(list) {
+    return ([].concat(list)).reduce((a, b) => (a || this._blank(b)), false);
+  }
+  
+  @ifInvalid(false)
   ready(list){
     return ([].concat(list)).reduce((a, b) => (a && this.status(b) === 'set'), true);
   }
@@ -742,10 +774,10 @@ export class DataHub {
   error(list) {
     return ([].concat(list)).reduce((a, b) => (a || this.status(b) === 'error'), false);
   }
-  
+
   @ifInvalid(false)
-  hasData(name) {
-    return  this.status(name) !== 'undefined';
+  locked(list){
+    return ([].concat(list)).reduce((a, b) => (a || this.status(b) === 'locked'), false);
   }
   
   @ifInvalid()
@@ -840,9 +872,9 @@ export class DataHub {
     }
     return a;
   }
-  
+
   @ifInvalid()
-  assign0(name, obj) {    
+  assign0(name, obj = {}) {    
     const newObj = Object.assign(this.first(name), obj);
     const data = this.get(name);
     data.splice(0, 1, newObj);
@@ -925,7 +957,6 @@ export class DataHub {
       }
       
       this.status(name, 'loading');
-      delete this._fetchParam[name];
       param = snapshot(param);
 
       Promise.resolve(param)
@@ -1000,7 +1031,6 @@ export class DataHub {
     this._config  = null;
     this._data  = null;
     this._status = null;
-    this._fetchParam = null;
   } 
 }
 
