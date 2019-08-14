@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { EventEmitter } from 'events';
 import { DataHub } from './DataHub.js';
 

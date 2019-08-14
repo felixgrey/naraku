@@ -1,3 +1,4 @@
+/* eslint-disable */
 import {noValue, same, blank, snapshot} from './Utils.js';
 
 const _seriesName = Math.random() * 10e6;

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import {noValue, stopRun, blank, errorLog, snapshot, same} from './Utils.js';
 
 let _Emitter = null;

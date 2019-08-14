@@ -1,3 +1,4 @@
+/* eslint-disable */
 /*
  空值检查函数
  */
