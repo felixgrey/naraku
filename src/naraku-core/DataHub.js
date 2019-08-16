@@ -539,7 +539,7 @@ function actionPlugn(dataName, configInfo, dh) {
       dh.set(dpName, snapshot(initValue));
     });
     
-    dh._controller.after('beforeFetcher', (newParam, param, newArgs, args) => {
+    dh.addBeforeFetcher((newParam, param, newArgs, args) => {
       if (newParam && args[1] === dataName) {
         newParam = {...newParam};
         delete newParam[total];
@@ -547,7 +547,7 @@ function actionPlugn(dataName, configInfo, dh) {
       return newParam;
     });
     
-    dh._controller.after('afterFetcher', (newResult, result, newArgs, args) => {
+    dh.addAfterFetcher((newResult, result, newArgs, args) => {
       if (args[1] === dataName) {
         dh._data[dpName][0][total] = newResult[total];
         return newResult[data];
@@ -607,6 +607,7 @@ function actionPlugn(dataName, configInfo, dh) {
   }
 }
 
+const _dataHubPluginNames = ['action', 'type', 'default', 'snapshot', 'reset', 'clear'];
 const _dataHubPlugin = {
   action: actionPlugn,
   type: actionPlugn,
@@ -664,7 +665,8 @@ const _dataHubPlugin = {
 };
 
 function _runDataConfigPlugn(cfg, name, info, ds) {
-  _dataHubPlugin[cfg] && _dataHubPlugin[cfg](name, info, ds);
+  if (!_dataHubPlugin[cfg]) { return true }
+  return _dataHubPlugin[cfg](name, info, ds) === false ? false : true;
 }
 
 export class DataHub {
@@ -687,16 +689,29 @@ export class DataHub {
     this._controller.register('beforeFetcher', same);
     this._controller.register('afterFetcher', same);  
     
+    this.addBeforeFetcher = (callback) => {
+      this._controller.after('beforeFetcher', callback);
+    }
+    this.addAfterFetcher = (callback) => {
+      this._controller.after('afterFetcher', callback);
+    }
+    
     this._init();
   }
   
   _init() {
     const config = this._config;
     for (let dataName in config) {
+      if(dataName.charAt(0) === '$') {
+        _runDataConfigPlugn(dataName, dataName, config, this);
+        continue;
+      }
       const configInfo = config[dataName];
-      for (let configName in configInfo){
-        _runDataConfigPlugn(configName, dataName, configInfo, this);
-      }      
+      for (let configName of _dataHubPluginNames) {
+        if(!configInfo[configName]){continue;}
+        const runNext = _runDataConfigPlugn(configName, dataName, configInfo, this);
+        if (!runNext) { break; }
+      }     
     }
   }
   
@@ -708,7 +723,7 @@ export class DataHub {
     }
     
     if(statusList.indexOf(value) === -1){
-      errorLog(`${name} status must be one of ${statusList.join(',')} but it is ${value}`);
+      errorLog(`${name} status must be one of ${statusList.join(',')}, but it is ${value}`);
       return;
     }
     
@@ -1035,12 +1050,11 @@ export class DataHub {
   } 
 }
 
-DataHub.addExtendPlugn = (name, callback) => {
-  _dataHubPlugin.$[name] = callback;
-}
-
-DataHub.addConfigPlugn = (name, callback) => {
-  _dataHubPlugin.c[name] = callback;
+DataHub.addPlugn = (name, callback) => {
+  if (name.charAt(0) !== '$') {
+    _dataHubPluginNames.push(name);
+  }
+  _dataHubPlugin[name] = callback;
 }
 
 DataHub.instance = (config) => {
@@ -1097,6 +1111,8 @@ DataHub.gDhName = 'gDh';
 DataHub.dhCName = 'dhController';
 DataHub.pDhCName = 'pDhController';
 DataHub.gDhCName = 'gDhController';
+
+DataHub.viewType = 'auto';
 
 DataHub.pagination = {
   data: 'data',

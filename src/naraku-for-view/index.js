@@ -71,6 +71,18 @@ function vueBind(dataHub, that) {
 
 DataHub.inject = (config, gDh) => {
   return Component => { 
+    
+    if (DataHub.viewType === 'React' ) {
+      return reactInject(Component, config, gDh);
+    }
+    
+    if (DataHub.viewType === 'Vue' ) {
+      if (typeof Component === 'function' && Component.prototype instanceof Blank) {
+        return vueInject((new Component()).vue || {}, config, gDh);
+      }
+      return vueInject(Component, config, gDh);
+    }
+    
     if (typeof Component === 'function') {
       
       if (Component.prototype.isReactComponent) {
@@ -78,10 +90,7 @@ DataHub.inject = (config, gDh) => {
       }
       
       if (Component.prototype instanceof Blank) {
-        const {vue} = new Component();
-        if(vue) {
-          return vueInject(vue, config, gDh);
-        }
+        return vueInject((new Component()).vue || {}, config, gDh);
       }
     }
 
@@ -95,10 +104,10 @@ DataHub.inject = (config, gDh) => {
 }
 
 DataHub.bind = (dataHub, that) => {
-  if (that.isReactComponent) {
+  if (DataHub.viewType === 'React' || that.isReactComponent) {
     return reactBind(dataHub, that);
   }  
-  if(that._isVue) {
+  if(DataHub.viewType === 'Vue' || that._isVue) {
     return vueBind(dataHub, that);
   }
 }
