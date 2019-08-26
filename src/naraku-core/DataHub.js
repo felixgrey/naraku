@@ -914,9 +914,15 @@ export class DataHub {
   
   @ifInvalid()
   clear(name) {
-    if(this.hasData(name)) {
-      this.set(name, []);
+    if (noValue(name)) {
+      return;
     }
+    
+    [].concat(name).forEach(_name => {
+      if(this.hasData(_name)) {
+        this.set(_name, []);
+      }
+    });
   }
   
   @ifInvalid()

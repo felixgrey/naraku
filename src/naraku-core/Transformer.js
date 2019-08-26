@@ -10,26 +10,29 @@ const _aggregates = {
   // 求和
   'sum': ({field, value, item, defaultValue}) => { 
     const currentValue = noValue(value) ? defaultValue: value;
-    const itemValue = noValue(item[field]) ? defaultValue : item[field]; 
+    let itemValue = noValue(item[field]) ? defaultValue : item[field]; 
+    itemValue = +itemValue;
     return currentValue + itemValue;
   },
   // 平均值
   'aver': ({field, item, defaultValue, keyCounts, data}) => { 
-    const itemValue = noValue(item[field]) ? defaultValue : item[field];    
+    let itemValue = noValue(item[field]) ? defaultValue : item[field];   
+    itemValue = +itemValue;
     const tempValueKey = `_currentSumValue.${field}`;
     if (data[tempValueKey] === undefined) {
       data[tempValueKey] = defaultValue;
     }
-    return (data[tempValueKey] += itemValue) / (keyCounts + 1);
+    return (data[tempValueKey] += +itemValue) / (keyCounts + 1);
   },
   // 中位数
   'median': ({field, item, defaultValue, keyCounts, data}) => {
-    const itemValue = noValue(item[field]) ? defaultValue : item[field];    
+    let itemValue = noValue(item[field]) ? defaultValue : item[field];    
+    itemValue = +itemValue;
     const tempValueKey = `_currentMedianValue.${field}`;
     if (data[tempValueKey] === undefined) {
       data[tempValueKey] = [];
     }
-    data[tempValueKey].push(itemValue);
+    data[tempValueKey].push(+itemValue);
     data[tempValueKey].sort();
     const _keyCounts = (keyCounts + 1);
     if (_keyCounts % 2) {
@@ -44,20 +47,23 @@ const _aggregates = {
   // 最大值
   'max': ({field, value, item, defaultValue}) => { 
     const currentValue = noValue(value) ? -Infinity: value;
-    const itemValue = noValue(item[field]) ? defaultValue : item[field];  
+    let itemValue = noValue(item[field]) ? defaultValue : item[field];  
+    itemValue = +itemValue;
     return currentValue > itemValue ? currentValue : itemValue;
   },
   // 最小值  
   'min': ({field, value, item, defaultValue}) => { 
     const currentValue = noValue(value) ? Infinity: value;
-    const itemValue = noValue(item[field]) ? defaultValue : item[field];
+    let itemValue = noValue(item[field]) ? defaultValue : item[field];
+    itemValue = +itemValue;
     return currentValue < itemValue ? currentValue : itemValue;
   },
    // 聚合条数
   'count': ({keyCounts}) => keyCounts + 1,
    // 字符串连接
   'join': ({field, value, item, option, keyCounts, defaultText}) => {
-    const itemValue = noValue(item[field]) ? defaultText : item[field];
+    let itemValue = noValue(item[field]) ? defaultText : item[field];
+    itemValue = '' + itemValue;
     return keyCounts === 0 ? `${itemValue}` : `${value}${option.$split || ','}${itemValue}`;
   },
   // 原始数据数组
