@@ -5,6 +5,7 @@ import { DataHub } from './DataHub.js';
 export * from './DataHub.js';
 export * from './Transformer.js';
 export * from './Utils.js';
+export * from './Declare.js';
 
 class NodeEvent extends EventEmitter {
   constructor(...args) {
