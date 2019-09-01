@@ -1,29 +1,33 @@
 import {noValue, errorLog} from './Utils.js';
 
 /*
-属性实体: 名称[@后缀1[&值]@后缀2...];
-实体：名称属性实体=值属性实体
-语句：定义实体:[[主语实体1,主语实体2...][=>宾语实体]]
-语言：[语言#][语句1;语句2;...]
+适用于具体业务组件、中等复杂度的配置,或作为命令脚本使用。
+
+属性实体: 名称[@后缀1[~值]@后缀2...]。
+实体：[名称属性实体]=[值属性实体]。
+语句：定义实体:[[主语实体1,主语实体2...][=>[宾语实体1,宾语实体2...]]]。
+语言：[语言#][语句1;语句2;...]。
 
 返回值结构 {
-  language // 语言实体
+  languages // 语言实体
   statements // 语句实体
 }
 
 statement结构 {
-  declareEntity // 定义实体
-  subjectEntity // 主语实体
-  objectEntity // 宾语实体
+  declareEntities // 定义实体
+  subjectEntities // 主语实体
+  objectEntities // 宾语实体
 }
 
 entity结构 {
-  name
-  nameAttribute
-  value
-  valueAttribute
+  name // 实体名称
+  nameAttribute // 实体名称属性
+  value // 实体值
+  valueAttribute //实体值属性
 }
+
 */
+
 function nullIfBlank(value) {
   if (noValue(value)) {
     return null;
@@ -143,17 +147,17 @@ export function compile(sourceCode = '') {
   const statements = toList(statementsSource, ';').map(staSource => {
     const [d_sSource, objectSource] = toKeyValue(staSource, '=>'); 
     const [declareSource, subjectSource] = toKeyValue(d_sSource, ':'); 
-    const declareEntity =  toEntity(declareSource);
+    const declareEntities =  toEntity(declareSource);
     
-    if (nullIfBlank(declareEntity) === null) {
+    if (nullIfBlank(declareEntities) === null) {
       errorLog('no declare:' + staSource);
       return null;
     }
 
     return {
-      declareEntity: declareEntity || [],
-      subjectEntity: toEntity(subjectSource) || [],
-      objectEntity: toEntity(objectSource) || []
+      declareEntities: declareEntities || [],
+      subjectEntities: toEntity(subjectSource) || [],
+      objectEntities: toEntity(objectSource) || []
     };
   }).filter(v => nullIfBlank(v) !== null);
 
