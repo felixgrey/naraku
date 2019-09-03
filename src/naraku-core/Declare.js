@@ -1,7 +1,7 @@
 import {noValue, errorLog} from './Utils.js';
 
 /*
-适用于具体业务组件、中等复杂度的配置,或作为命令脚本使用。
+用于定义DSL。
 
 属性实体: 名称[@后缀1[~值]@后缀2...]。
 实体：[名称属性实体]=[值属性实体]。
@@ -143,6 +143,7 @@ function toEntity(sourceCode = '', nvlNameAble = false) {
 }
 
 export function compile(sourceCode = '') {
+  sourceCode = sourceCode.replace(/\n|\t/g, ' ');
   const [languageSource, statementsSource] = toKeyValue(sourceCode, '#', true);
   const statements = toList(statementsSource, ';').map(staSource => {
     const [d_sSource, objectSource] = toKeyValue(staSource, '=>'); 
