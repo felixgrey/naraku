@@ -271,6 +271,11 @@ export class Controller {
     return this._dataHub.ready(list);
   }
   
+  @ifInvalid(false)
+  locked = (list) => {
+    return this._dataHub.locked(list);
+  }
+
   @ifInvalid()
   register = (name, callback) => {
     this._runnerList.push(name);
