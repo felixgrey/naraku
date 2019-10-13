@@ -749,7 +749,7 @@ export class DataHub {
       errorLog(`can not set ${name} when locked`);
       return;
     }
-    if(!this._validate(value)){
+    if(!this._validate(name, value)){
       value = [];
     }
     const data =  [].concat(value);
@@ -957,9 +957,9 @@ export class DataHub {
     return true;
   }
   
-  _validate(value){
+  _validate(name, value){
     if (value === undefined){
-      errorLog(`${value} can not be undefined`);
+      errorLog(`${name} can not be undefined`);
       return false;
     }
     return true;
