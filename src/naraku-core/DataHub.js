@@ -271,6 +271,11 @@ export class Controller {
     return this._dataHub.ready(list);
   }
   
+  @ifInvalid()
+  switchFlag(name, flag) {
+  	return this._dataHub.switchFlag(name, flag);
+  }
+  
   @ifInvalid(false)
   locked = (list) => {
     return this._dataHub.locked(list);
@@ -500,6 +505,7 @@ function actionPlugn(dataName, configInfo, dh) {
     form = false,
     pagination = false,
     first = false,
+	switcher = false
   } = configInfo;
 
   if (noValue(action) || action === 'static') {
@@ -561,7 +567,7 @@ function actionPlugn(dataName, configInfo, dh) {
     });
   }
 
-  const $fetch = (extendParam = {}) => {
+  let $fetch = (extendParam = {}) => {
     const param = {};
 
     for (let depName of dependence) {
@@ -587,6 +593,25 @@ function actionPlugn(dataName, configInfo, dh) {
 
   }
   
+  if (switcher) {
+	let $oldFetch = $fetch;
+	$fetch = (...args) => {
+		if (dh._switcherMap[dataName]) {
+			$oldFetch(...args);
+		} else {
+			dh._switcherWatingMap[dataName] = true;;
+		}
+	}
+	
+	dh._controller.on('$switcher:'+ dataName,(flag) => {
+		dh._switcherMap[dataName] = flag;
+		if (flag && dh._switcherWatingMap[dataName]) {
+			dh._switcherWatingMap[dataName] = false;
+			$fetch();
+		}		
+	});
+  }
+  
   const lockList = dependence.concat(filter);
   let unlock = blank;
   dh._controller.on('$statusChange:' + dataName, (status)=>{
@@ -598,7 +623,7 @@ function actionPlugn(dataName, configInfo, dh) {
   });
   
   dh._executor.register('$refresh:' + dataName, $fetch);
-  
+
   if(!lazy){
     if (dependence.length) {
       dh._controller.when(dependence, $fetch);  
@@ -607,8 +632,8 @@ function actionPlugn(dataName, configInfo, dh) {
     if (filter.length) {
       filter.forEach(fName => dh._controller.when(fName, $fetch));
     }
-    
-    $fetch();
+	
+	$fetch();
   }
 }
 
@@ -690,6 +715,8 @@ export class DataHub {
     this._data = {};
     this._status = {};
     this._config = config;
+	this._switcherMap = {};
+	this._switcherWatingMap = {};
 
     this._controller.register('beforeFetcher', same);
     this._controller.register('afterFetcher', same);  
@@ -720,6 +747,11 @@ export class DataHub {
     }
   }
   
+  @ifInvalid()
+  switchFlag(name, flag = true) {
+	this.emit('$switcher:'+ name, flag); 
+  }
+
   @ifInvalid()
   status(...args) {
     let [name, value] = args;
@@ -1058,6 +1090,8 @@ export class DataHub {
     this._config  = null;
     this._data  = null;
     this._status = null;
+	this._switcherMap = null;
+	this._switcherWatingMap = null;
   } 
 }
 

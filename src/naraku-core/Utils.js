@@ -133,14 +133,18 @@ const NumberFormat = {
     if (decimal) {
       number2 = number2 + new Number(decimal).toFixed(fixed).replace('0.', '.');      
     }
-    
-    if (noZero) {
-      number2 = number2.replace(/^0\./g, '.');
-    }
-    
+
     if (!forceFixed) {
-      number2 = number2.replace(/(\.\d*?)[0]*$/g, (a, b) => b.replace(/\.$/g, ''));
-    }
+      number2 = number2.replace(/(\.\d*?)[0]*$/g, (a, b) => b.replace(/\.$/g, ''));	  
+    } else {
+		if (!decimal) {
+			number2 = new Number(number).toFixed(fixed)
+		}
+	}
+	
+	if (noZero) {
+	  number2 = number2.replace(/^0\./g, '.');
+	}
 
     return number2;
   }
