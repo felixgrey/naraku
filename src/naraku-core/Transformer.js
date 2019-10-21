@@ -349,7 +349,7 @@ function groupStrToConfig(config) {
   const groupFields = groupFieldStr.replace(/^\s+|\s+$/g, '').split(',').map(field => field.replace(/^\s+|\s+$/g,''));
   const valueFields = valueFieldStr.replace(/^\s+|\s+$/g, '').split(',').map(field => {
     field = field.replace(/^\s+|\s+$/g, '');
-    const [fieldName, aggregateType] = field.split(':');
+    const [fieldName, aggregateType] = field.indexOf('@') !== -1 ? field.split('@') : field.split(':');
     if(aggregateType && _aggregates[aggregateType]) {
       _config.aggregate[fieldName] = _aggregates[aggregateType];
     }

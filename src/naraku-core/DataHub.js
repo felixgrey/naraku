@@ -176,6 +176,11 @@ export class Controller {
   }
   
   @ifInvalid()
+  clear = (...args) => {
+    return this._dataHub.clear(...args);
+  }
+  
+  @ifInvalid()
   get = (name) => {
     return this._dataHub.get(name);
   }
@@ -748,8 +753,11 @@ export class DataHub {
   }
   
   @ifInvalid()
-  switchFlag(name, flag = true) {
-	this.emit('$switcher:'+ name, flag); 
+  switchFlag(names, flag = true) {
+	if(names === undefined) {
+		return;
+	}
+	[].concat(names).forEach(name => this.emit('$switcher:'+ name, flag));
   }
 
   @ifInvalid()
@@ -991,7 +999,7 @@ export class DataHub {
   
   _validate(name, value){
     if (value === undefined){
-      errorLog(`${name} can not be undefined`);
+      // errorLog(`${name} can not be undefined`);
       return false;
     }
     return true;
