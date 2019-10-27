@@ -314,9 +314,9 @@ export class Controller {
   }
   
   @ifInvalid()
-  fetch = (type, param = {}) => {
+  fetch = (type, param = {}, extendParam = {}) => {
     const tempDataName = '' + Math.random();
-    this._dataHub.doFetch(type, tempDataName, param, {});
+    this._dataHub.doFetch(type, tempDataName, param, extendParam);
     return new Promise((resolve) => {
       this.once('$fetchEnd:' + tempDataName, (data) => {
         resolve(data);
@@ -510,7 +510,8 @@ function actionPlugn(dataName, configInfo, dh) {
     form = false,
     pagination = false,
     first = false,
-	switcher = false
+	switcher = false,
+	extendParam = {},
   } = configInfo;
 
   if (noValue(action) || action === 'static') {
@@ -572,7 +573,7 @@ function actionPlugn(dataName, configInfo, dh) {
     });
   }
 
-  let $fetch = (extendParam = {}) => {
+  let $fetch = (extendParam) => {
     const param = {};
 
     for (let depName of dependence) {
@@ -719,6 +720,7 @@ export class DataHub {
     this._lagFetchTimeoutIndex = {};
     this._data = {};
     this._status = {};
+	this._lockedStack = {};
     this._config = config;
 	this._switcherMap = {};
 	this._switcherWatingMap = {};
@@ -762,21 +764,36 @@ export class DataHub {
 
   @ifInvalid()
   status(...args) {
-    let [name, value] = args;
-    if (args.length === 1){
-      return this._status[name] || 'undefined';
-    }
-    
-    if(statusList.indexOf(value) === -1){
+	let [name, value = null] = args;
+	const oldStatus = this._status[name] || 'undefined';
+	if (args.length === 1) {
+		return oldStatus;
+	}
+
+    if(value !== null && statusList.indexOf(value) === -1){
       errorLog(`${name} status must be one of ${statusList.join(',')}, but it is ${value}`);
-      return;
+      return oldStatus;
     }
-    
-    if (value !== (this._status[name] || 'undefined')) {
+	this._lockedStack[name] = this._lockedStack[name] || [];
+
+	if(value === 'locked') {	
+		this._lockedStack[name].push(oldStatus);
+	} else if (this._lockedStack[name].length){
+		if (value === null) {
+			value = this._lockedStack[name].pop();
+		} else {
+			this._lockedStack[name] = [];
+		}
+	}
+
+    if (value !== null && value !== oldStatus) {
       this._status[name] = value;
       this._emitter.emit('$statusChange', {name, value});
       this._emitter.emit('$statusChange:' + name, value);
+	  return this._status[name];
     }
+	
+	return oldStatus;
   }
 
   beforeSet(name, value) {
@@ -843,22 +860,17 @@ export class DataHub {
   
   @ifInvalid()
   lock(names) {
-    const oldStatus = [];
     let unlock = false;
     names = [].concat(names);
-    
     names.forEach(name => {
-      if(this.status(name) !== 'locked'){
-        oldStatus.push({name, old:this.status(name)});
-        this.status(name, 'locked');
-      }
+      this.status(name, 'locked');
     });
     
     return () => {
       if(!unlock){
         unlock = true;
-        oldStatus.forEach(({name, old}) => {
-          this.status(name, old);
+        names.forEach((name) => {
+          this.status(name, null);
         });
       }
     };
@@ -1099,6 +1111,7 @@ export class DataHub {
     this._data  = null;
     this._status = null;
 	this._switcherMap = null;
+	this._lockedStack = null;
 	this._switcherWatingMap = null;
   } 
 }
