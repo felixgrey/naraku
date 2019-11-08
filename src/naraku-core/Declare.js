@@ -117,18 +117,25 @@ function toAttribute(sourceCode = '') {
 
 function toEntity(sourceCode = '', nvlNameAble = false) {
   if (nullIfBlank(sourceCode) === null) {
-    return {};
+    return null;
   }
   
   const entityList = toList(sourceCode, ',').map(sourcePart => {
     const [keySource, valueSource] = toKeyValue(sourcePart, '='); 
-    const [name, nameAttribute] = toAttribute(keySource);
+    let [name, nameAttribute] = toAttribute(keySource);
     if (nullIfBlank(name) === null && !nvlNameAble) {
       errorLog('no entity key:' + sourcePart);
-      return {};
+      return null;
     }
 
-    const [value, valueAttribute] = toAttribute(valueSource);
+    let [value, valueAttribute] = toAttribute(valueSource);
+	
+	if (typeof value === 'string' && value.indexOf('|') !== -1) {
+		value = value.split('|').filter(v => v.trim() !== '');
+	}
+	
+	nameAttribute = nameAttribute === null ? {} : nameAttribute;
+	valueAttribute = valueAttribute === null ? {} : valueAttribute;
 
     return {
       name,
