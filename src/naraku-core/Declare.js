@@ -115,6 +115,36 @@ function toAttribute(sourceCode = '') {
   return [name, nullIfBlank(attributeObj)];
 }
 
+function specialValue(value, valueAttribute) {
+	const {
+		number,
+		int,
+		float,
+		boolean,
+		string,
+	} = valueAttribute || {};
+	
+	if (number) {
+		value = +value;
+	} else if (float) {
+		value = parseFloat(value);
+	} else if (boolean) {
+		value = !!value;
+	} else if (string) {
+		value = value + '';
+	}
+	
+	if (value === '$undefined') {
+		value = undefined;
+	} else if (value === '$null') {
+		value =  null;
+	} else if (value === '$blank') {
+		value = '';
+	}
+	
+	return value;
+}
+
 function toEntity(sourceCode = '', nvlNameAble = false) {
   if (nullIfBlank(sourceCode) === null) {
     return null;
@@ -129,9 +159,12 @@ function toEntity(sourceCode = '', nvlNameAble = false) {
     }
 
     let [value, valueAttribute] = toAttribute(valueSource);
-	
+
 	if (typeof value === 'string' && value.indexOf('|') !== -1) {
-		value = value.split('|').filter(v => v.trim() !== '');
+		value = value.split('|').filter(v => v.trim() !== '').map(v => specialValue(v, valueAttribute));
+	}
+	if (!Array.isArray(value)) {
+		value = specialValue(value, valueAttribute);
 	}
 	
 	nameAttribute = nameAttribute === null ? {} : nameAttribute;
