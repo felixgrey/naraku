@@ -124,24 +124,28 @@ function specialValue(value, valueAttribute) {
 		string,
 	} = valueAttribute || {};
 	
+	if (!string) {
+		if (value === '$undefined') {
+			return undefined;
+		} else if (value === '$null') {
+			return null;
+		} else if (value === '$blank') {
+			return '';
+		}
+	}
+	
 	if (number) {
-		value = +value;
-	} else if (float) {
-		value = parseFloat(value);
+		return +value;
+	} else if (int) {
+		return parseInt(value);
+	}else if (float) {
+		return parseFloat(value);
 	} else if (boolean) {
-		value = !!value;
+		return !!value;
 	} else if (string) {
-		value = value + '';
+		return value + '';
 	}
-	
-	if (value === '$undefined') {
-		value = undefined;
-	} else if (value === '$null') {
-		value = null;
-	} else if (value === '$blank') {
-		value = '';
-	}
-	
+
 	return value;
 }
 
