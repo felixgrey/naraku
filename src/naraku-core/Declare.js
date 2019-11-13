@@ -137,7 +137,7 @@ function specialValue(value, valueAttribute) {
 	if (value === '$undefined') {
 		value = undefined;
 	} else if (value === '$null') {
-		value =  null;
+		value = null;
 	} else if (value === '$blank') {
 		value = '';
 	}
