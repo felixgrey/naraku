@@ -8,6 +8,8 @@ const _seriesName = Math.random() * 10e6;
  预定义的聚合函数
  */
 const _aggregates = {
+   // 什么也不做
+  'nothing':() => {},
   // 求和
   'sum': ({field, value, item, defaultValue}) => { 
     const currentValue = noValue(value) ? defaultValue: value;
@@ -687,6 +689,39 @@ export class TransformProcess {
     } 
     
     this.data = rootList;
+  }
+  
+  @refReturn
+  toDisplayFields(grouped, keyField, valueField) {
+	if(noValue(grouped) || noValue(keyField) || noValue(valueField)){
+		return;  
+	}
+	
+	const tempField = 'field_' + Date.now();
+	this.toGrouped(`${grouped} => ${tempField}@nothing`);
+	
+	const allFields = new Set();
+	this.data = this.data.map(item => {
+		const newItem = {
+			...item
+		};
+		
+		const _origin = newItem._origin;
+		delete newItem._origin;
+		delete newItem[tempField];
+		
+		for (let child of _origin) {			
+			newItem[child[keyField]] = child[valueField];
+			allFields.add(child[keyField]);
+		}
+		
+		return newItem;
+	});	
+	
+	if(this.useRef){
+		this.refs.allDisplayFields = Array.from(allFields.values())
+	}
+	
   }
 
   @refReturn
