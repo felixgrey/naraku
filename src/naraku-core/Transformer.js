@@ -692,34 +692,41 @@ export class TransformProcess {
   }
   
   @refReturn
-  toDisplayFields(grouped, keyField, valueField) {
+  toDisplayFields(grouped, keyField, valueField, nameField) {
 	if(noValue(grouped) || noValue(keyField) || noValue(valueField)){
 		return;  
 	}
 	
 	const tempField = 'field_' + Date.now();
+	if (noValue(nameField)) {
+		nameField = tempField;
+	}
 	this.toGrouped(`${grouped} => ${tempField}@nothing`);
 	
 	const allFields = new Set();
+	const code_name = {};
 	this.data = this.data.map(item => {
 		const newItem = {
-			...item
+			...item,
 		};
 		
 		const _origin = newItem._origin;
-		delete newItem._origin;
 		delete newItem[tempField];
 		
 		for (let child of _origin) {			
 			newItem[child[keyField]] = child[valueField];
 			allFields.add(child[keyField]);
+			code_name[child[keyField]] = child[nameField];
 		}
 		
 		return newItem;
 	});	
 	
 	if(this.useRef){
-		this.refs.allDisplayFields = Array.from(allFields.values())
+		this.refs.allDisplayFields = Array.from(allFields.values());
+		if (!noValue(nameField)) {
+			this.refs.code_name = code_name;
+		}
 	}
 	
   }

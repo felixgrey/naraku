@@ -131,6 +131,10 @@ function specialValue(value, valueAttribute) {
 			return null;
 		} else if (value === '$blank') {
 			return '';
+		} else if (/\$space(\d*)/g.test(value)) {			
+			let repeat = 1;
+			(value + '').replace(/\$space(\d*)/g, (a, num) => { repeat = (+num)});			
+			return new Array(repeat + 1).join(' ');
 		}
 	}
 	
