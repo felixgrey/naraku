@@ -924,8 +924,8 @@ export class DataHub {
   }
   
   @ifInvalid()
-  bind(that) {
-    return DataHub.bind(this, that);
+  bind(that, dhName, dhCName) {
+    return DataHub.bind(this, that, dhName, dhCName);
   }
   
   beforeGet(name, value){
@@ -1191,22 +1191,23 @@ DataHub.paginationData = {
   total: 0,
 }
 
-DataHub.bindView = (dataHub, updateView = () => blank) => {
+DataHub.bindView = (dataHub, updateView = () => blank, dhName = DataHub.pDhName, dhCName = dhName + 'Controller') => {
   return {
     doBind: (that) => {
-      if (that[DataHub.pDhName]) {
-        errorLog('dataHub has bound.');
+      if (that[dhName]) {
+        errorLog(`dataHub has bound by name ${dhName}.`);
         return;
       }
-      that[DataHub.pDhName] = dataHub;
-      that[DataHub.pDhCName] = that[DataHub.pDhName].controller();
-      that[DataHub.pDhCName].watch(() => updateView.call(that)); 
+      that[dhName] = dataHub;
+      that[dhCName] = that[dhName].controller();
+      that[dhCName].watch(() => updateView.call(that)); 
     },
     beforeDestroy: (that, beforeDestroy) => {
       beforeDestroy && beforeDestroy.apply(that);
       
-      that[DataHub.pDhCName] && that[DataHub.pDhCName].destroy();      
-      that[DataHub.pDhCName] = null;
+      that[dhCName] && that[dhCName].destroy();      
+      that[dhCName] = null;
+	  that[dhName] = null;
     }
   }
 };

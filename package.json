@@ -1,7 +1,7 @@
 {
   "name": "naraku",
-  "version": "0.7.5",
-  "description": "DataHub and Transformer for BI and OA",
+  "version": "0.9.1",
+  "description": "DataHub and Transformer for OA",
   "repository": "https://github.com/felixgrey/naraku.git",
   "main": "lib/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "ok": "node publish.js ok"
   },
   "keywords": [
-    "BI",
+    "OA",
     "Store",
     "DataHub",
     "Transformer",

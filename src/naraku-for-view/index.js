@@ -22,10 +22,10 @@ function reactInject(Component, config, gDh) {
   return Component;
 };
 
-function reactBind(dataHub, that) {
+function reactBind(dataHub, that, dhName, dhCName) {
   const {doBind, beforeDestroy} = DataHub.bindView(dataHub, function() {
     this.forceUpdate();
-  });
+  }, dhName, dhCName);
   
   doBind(that);
   
@@ -56,10 +56,10 @@ function vueInject(Component, config, gDh) {
   return Component;
 }
 
-function vueBind(dataHub, that) {
+function vueBind(dataHub, that, dhName, dhCName) {
   const {doBind, beforeDestroy} = DataHub.bindView(dataHub, function() {
     this.$forceUpdate();
-  });
+  }, dhName, dhCName);
   
   doBind(that);
   
@@ -103,12 +103,12 @@ DataHub.inject = (config, gDh) => {
   }
 }
 
-DataHub.bind = (dataHub, that) => {
+DataHub.bind = (dataHub, that, dhName, dhCName) => {
   if (DataHub.viewType === 'React' || that.isReactComponent) {
-    return reactBind(dataHub, that);
+    return reactBind(dataHub, that, dhName, dhCName);
   }  
   if(DataHub.viewType === 'Vue' || that._isVue) {
-    return vueBind(dataHub, that);
+    return vueBind(dataHub, that, dhName, dhCName);
   }
 }
 

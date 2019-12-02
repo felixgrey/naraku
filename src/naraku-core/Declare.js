@@ -115,6 +115,25 @@ function toAttribute(sourceCode = '') {
   return [name, nullIfBlank(attributeObj)];
 }
 
+let unShowChars = [
+  '\uE000','\uE001','\uE002','\uE003','\uE004','\uE005','\uE006','\uE007','\uE008','\uE009',
+  '\uE010','\uE011','\uE012','\uE013','\uE014','\uE015','\uE016','\uE017','\uE018','\uE019',
+  '\uE020','\uE021','\uE022','\uE023','\uE014','\uE025','\uE026','\uE027','\uE028','\uE029'
+];
+const keyWords = ["#", ";", ":", "," ,"=" , "@", "~", "|", "&"];
+export function replaceKeyWords(sourceCode){
+	keyWords.forEach((word, index) => {
+		sourceCode = sourceCode.replace(new RegExp('&\\' + word, 'g'), unShowChars[index]);
+	});
+	return sourceCode;
+}
+export function reducKeyWords(str) {
+	unShowChars.forEach((code, index) => {
+		str = str.replace(new RegExp(code, 'g'), keyWords[index]);
+	});
+	return str;
+}
+
 function specialValue(value, valueAttribute) {
 	const {
 		number,
@@ -122,6 +141,7 @@ function specialValue(value, valueAttribute) {
 		float,
 		boolean,
 		string,
+		json,
 	} = valueAttribute || {};
 	
 	if (!string) {
@@ -131,6 +151,10 @@ function specialValue(value, valueAttribute) {
 			return null;
 		} else if (value === '$blank') {
 			return '';
+		} else if (value === '$true') {
+			return true;
+		} else if (value === '$false') {
+			return false;
 		} else if (/\$space(\d*)/g.test(value)) {			
 			let repeat = 1;
 			(value + '').replace(/\$space(\d*)/g, (a, num) => { repeat = (+num)});			
@@ -142,14 +166,28 @@ function specialValue(value, valueAttribute) {
 		return +value;
 	} else if (int) {
 		return parseInt(value);
-	}else if (float) {
+	} else if (float) {
 		return parseFloat(value);
 	} else if (boolean) {
 		return !!value;
-	} else if (string) {
-		return value + '';
+	} else if (string) {		
+		return reducKeyWords(value + '');
+	} else if (json) {		
+		return JSON.parse(reducKeyWords(value + ''));
 	}
 
+	return value;
+}
+
+function compileValue(value, valueAttribute) {
+	if (typeof value === 'string' && value.indexOf('|') !== -1) {
+		value = value.split('|').filter(v => v.trim() !== '').map(v => specialValue(v, valueAttribute));
+	}
+	
+	if (!Array.isArray(value)) {
+		value = specialValue(value, valueAttribute);
+	}
+	
 	return value;
 }
 
@@ -168,15 +206,17 @@ function toEntity(sourceCode = '', nvlNameAble = false) {
 
     let [value, valueAttribute] = toAttribute(valueSource);
 
-	if (typeof value === 'string' && value.indexOf('|') !== -1) {
-		value = value.split('|').filter(v => v.trim() !== '').map(v => specialValue(v, valueAttribute));
-	}
-	if (!Array.isArray(value)) {
-		value = specialValue(value, valueAttribute);
-	}
+	value = compileValue(value, valueAttribute);
 	
 	nameAttribute = nameAttribute === null ? {} : nameAttribute;
 	valueAttribute = valueAttribute === null ? {} : valueAttribute;
+	
+	for (let attr in nameAttribute) {
+		nameAttribute[attr] = compileValue(nameAttribute[attr], {});
+	}
+	for (let attr in valueAttribute) {
+		valueAttribute[attr] = compileValue(valueAttribute[attr], {});
+	}
 
     return {
       name,
@@ -191,7 +231,20 @@ function toEntity(sourceCode = '', nvlNameAble = false) {
 }
 
 export function compile(sourceCode = '') {
-  sourceCode = sourceCode.replace(/\n|\t/g, ' ');
+	sourceCode = sourceCode.replace(/={4,}/g, '====');
+	let sourceCodeList = sourceCode.split('====').filter(a => a.trim() !== '');
+	let compiled = sourceCodeList.map(_sourceCode => {
+		return _compile(_sourceCode);
+	});
+	if (compiled.length === 1) {
+		return compiled[0];
+	}
+	return compiled;
+}
+
+function _compile(sourceCode = '') {
+  sourceCode = replaceKeyWords(sourceCode.replace(/\n|\t/g, ' '));
+
   const [languageSource, statementsSource] = toKeyValue(sourceCode, '#', true);
   const statements = toList(statementsSource, ';').map(staSource => {
     const [d_sSource, objectSource] = toKeyValue(staSource, '=>'); 
