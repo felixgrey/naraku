@@ -281,6 +281,11 @@ export class Controller {
   	return this._dataHub.switchFlag(name, flag);
   }
   
+  // 改名
+  switchTo(...args) {
+	return this.switchFlag(...args);
+  }
+  
   @ifInvalid(false)
   locked = (list) => {
     return this._dataHub.locked(list);
@@ -760,6 +765,11 @@ export class DataHub {
 		return;
 	}
 	[].concat(names).forEach(name => this.emit('$switcher:'+ name, flag));
+  }
+  
+  // 改名
+  switchTo(...args) {
+	return this.switchFlag(...args);
   }
 
   @ifInvalid()

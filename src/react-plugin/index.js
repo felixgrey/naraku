@@ -11,7 +11,6 @@ var declareComponent = function(Component, PropTypes) {
       var oldcomponentWillMount = this.componentWillMount;
       
       this.componentWillMount = function dhComponentWillMount() {
-		this.setState(this.state || {});
         context.dataHub.bind(this);
         oldcomponentWillMount && oldcomponentWillMount.apply(this);
       };     
