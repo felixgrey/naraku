@@ -19,6 +19,54 @@ export {
   blank,
 };
 
+/*
+ 深层对象值
+*/
+export function getObjValue(obj = null, field = null, blank = null,  _deep = 0) {
+	
+  if (typeof obj !== 'object') {
+		return obj;  
+  }
+
+  if (noValue(field) || noValue(obj)) {
+		if (typeof blank === 'function') {
+			return blank(_deep);
+		}
+    return blank;
+  }
+
+  if (typeof field === 'string') {
+    field = field.split('.').filter(a => !(noValue(a) || a.trim() === ''));
+  }
+
+  if (!field.length) {
+    if (noValue(obj)) {
+			if (typeof blank === 'function') {
+				return blank(_deep);
+			}
+      return blank;
+    }
+    return obj;
+  }
+
+  let theField = field.shift().trim();
+
+  let value = obj[theField];
+
+  if (field.length) {
+    return getObjValue(value, field, blank, _deep++);
+  }
+
+  if (noValue(value)) {
+		if (typeof blank === 'function') {
+			return blank(obj, _deep, theField);
+		}
+    return blank;
+  }
+
+  return value;
+}
+
 
 
 /*
