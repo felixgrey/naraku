@@ -1246,7 +1246,6 @@ DataHub.setEmitter = (Emitter) => {
 
 DataHub.inject = blank;
 DataHub.bind = blank;
-DataHub.instance = blank;
 
 DataHub.dhName = 'dh';
 DataHub.pDhName = 'pDh';
