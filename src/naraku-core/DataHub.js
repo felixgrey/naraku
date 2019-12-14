@@ -167,6 +167,7 @@ export class Controller {
 	@ifInvalid()
 	destroy() {
 		this._invalid = true;
+		this._dataHub.emit('$controllerDestroy', this._dataHub, this);
 		clearTimeout(this._watchTimeoutIndex);
 		this._offList.forEach(off => off());
 		this._runnerList.forEach(name => {
