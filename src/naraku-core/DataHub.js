@@ -590,7 +590,7 @@ function actionPlugn(dataName, configInfo, dh) {
 		} = pagination;
 
 		let value = {};
-		if (dh._config[dpName] && dh._config[dpName].default) {
+		if (dh._config[dpName] && dh._config[dpName].default !== undefined) {
 			const pgData = snapshot(dh._config[dpName].default);
 			value = [].concat(pgData)[0] || {};
 		}
@@ -667,7 +667,6 @@ function actionPlugn(dataName, configInfo, dh) {
 
 		dh._controller.on('$switcher:' + dataName, (flag) => {
 			dh._switcherMap[dataName] = flag;
-			dh.status(dataName, flag ? 'on': 'off');
 			if (flag && dh._switcherWatingMap[dataName]) {
 				dh._switcherWatingMap[dataName] = false;
 				$fetch();
@@ -710,7 +709,7 @@ const _dataHubPlugin = {
 		} = configInfo;
 
 		if (_default !== undefined && !dh.get(dataName).length) {
-			dh.set(dataName, snapshot(_default));
+			dh.set(dataName, snapshot([].concat(_default)));
 		}
 	},
 	snapshot: (dataName, configInfo, dh) => {
@@ -779,7 +778,6 @@ export class DataHub {
 		this._lagFetchTimeoutIndex = {};
 		this._data = {};
 		this._status = {};
-		this._offStatus = {};
 		this._lockedStack = {};
 		this._config = config;
 		this._switcherMap = {};
@@ -839,43 +837,8 @@ export class DataHub {
 		if (args.length === 1) {
 			return oldStatus;
 		}
-		
-		if (value === 'on' || value === 'off') {
-			if (!this._switcherMap.hasOwnProperty(name)) {
-				errorLog(`the only data which has switch can be set status on or off`);
-				return oldStatus;
-			}
-			
-			if (oldStatus === 'off' && value === 'off') {
-				return 'off';
-			}
-			
-			if (oldStatus !== 'off' && value === 'on') {
-				return oldStatus;
-			}
-			
-			if (value === 'on') {
-				value = this._offStatus[name];
-				this._status[name] = value;
-				delete this._offStatus[name];
-				return value;
-			}
-
-			if (value === 'off') {
-				this._offStatus[name] = oldStatus;
-				this._status[name] = 'off';
-				return 'off';
-			}
-
-			return oldStatus;
-		}
 
 		this._lockedStack[name] = this._lockedStack[name] || [];
-		if (value === 'on') {
-			if (this._lockedStack[name].length) {
-				value = this._lockedStack[name];
-			}
-		}
 
 		if (value !== null &&  value !== '$current' && statusList.indexOf(value) === -1) {
 			errorLog(`${name} status must be one of ${statusList.join(',')}, but it is ${value}`);
@@ -913,11 +876,6 @@ export class DataHub {
 	set(name, value) {
 		if (this.status(name) === 'locked') {
 			errorLog(`can not set ${name} when locked`);
-			return;
-		}
-		
-		if (this.status(name) === 'off') {
-			errorLog(`can not set ${name} when off`);
 			return;
 		}
 		
@@ -1113,7 +1071,6 @@ export class DataHub {
 
 		this.status(name, 'undefined');
 		delete this._status[name];
-		delete this._offStatus[name];
 
 		this.emit('$dataChange', {
 			name
@@ -1241,7 +1198,6 @@ export class DataHub {
 		this._config = null;
 		this._data = null;
 		this._status = null;
-		this._offStatus = null;
 		this._switcherMap = null;
 		this._lockedStack = null;
 		this._switcherWatingMap = null;
